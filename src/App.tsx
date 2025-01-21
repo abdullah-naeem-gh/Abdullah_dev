@@ -14,98 +14,133 @@ const App: React.FC = () => {
 
   const headerOpacity = useTransform(scrollXProgress, [0, 0.1], [1, 0.6]);
 
-  // Smooth horizontal scrolling with mouse wheel
   useEffect(() => {
+    const element = document.documentElement;
     const container = containerRef.current;
+    
     if (!container) return;
 
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const scrollSpeed = 2; // Adjust for faster/slower scrolling
-      container.scrollLeft += e.deltaY * scrollSpeed;
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        const multiplier = 2.5;
+        container.scrollLeft += e.deltaY * multiplier;
+      }
     };
 
-    container.addEventListener('wheel', handleWheel, { passive: false });
-    return () => container.removeEventListener('wheel', handleWheel);
+    element.addEventListener('wheel', onWheel, { passive: false });
+    return () => element.removeEventListener('wheel', onWheel);
   }, []);
 
-  // Section widths and layout configuration
-  const sectionWidth = "100vw"; // Each section takes full viewport width
-  const sectionStyle = `w-[${sectionWidth}] h-full flex items-center justify-center flex-shrink-0`;
+  const menuItems = [
+    { title: 'About', section: 0 },
+    { title: 'Experience', section: 1 },
+    { title: 'Projects', section: 2 },
+    { title: 'Skills', section: 3 }
+  ];
+
+  const scrollToSection = (section: number) => {
+    if (containerRef.current) {
+      const targetScroll = window.innerWidth * section;
+      containerRef.current.scrollTo({
+        left: targetScroll,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   return (
-    <div className="fixed inset-0 bg-gray-900">
-      {/* Navigation Header */}
+    <div className="h-screen w-screen overflow-hidden bg-gray-900">
+      {/* Header */}
       <motion.header 
         style={{ opacity: headerOpacity }}
-        className="fixed top-0 left-0 right-0 z-50 p-6 flex justify-between items-center bg-gradient-to-b from-gray-900 to-transparent"
+        className="fixed top-0 left-0 right-0 z-50 px-8 py-6 flex justify-between items-center bg-gradient-to-b from-gray-900 to-transparent"
       >
-        <motion.h1 
-          className="text-2xl font-bold text-white"
-          whileHover={{ scale: 1.05 }}
-        >
-          Abdullah Naeem
-        </motion.h1>
-        <div className="flex gap-4">
-          <motion.a
-            href="mailto:n.abdullah.self@gmail.com"
-            className="text-gray-300 hover:text-white transition-colors"
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            whileTap={{ scale: 0.95 }}
+        {/* Left side - Name and Social Links */}
+        <div className="flex items-center gap-6">
+          <motion.h1 
+            className="text-2xl font-bold text-white"
+            whileHover={{ scale: 1.05 }}
           >
-            <Mail size={20} />
-          </motion.a>
-          <motion.a
-            href="https://github.com/abdullah-naeem-gh"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-300 hover:text-white transition-colors"
-            whileHover={{ scale: 1.1, rotate: -5 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Github size={20} />
-          </motion.a>
+            Abdullah Naeem
+          </motion.h1>
+          <div className="flex gap-4">
+            <motion.a
+              href="mailto:n.abdullah.self@gmail.com"
+              className="text-gray-300 hover:text-white transition-colors"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Mail size={20} />
+            </motion.a>
+            <motion.a
+              href="https://github.com/abdullah-naeem-gh"
+              className="text-gray-300 hover:text-white transition-colors"
+              whileHover={{ scale: 1.1, rotate: -5 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Github size={20} />
+            </motion.a>
+          </div>
         </div>
+
+        {/* Right side - Navigation Menu */}
+        <nav>
+          <ul className="flex gap-8">
+            {menuItems.map((item) => (
+              <motion.li key={item.title}>
+                <motion.button
+                  onClick={() => scrollToSection(item.section)}
+                  className="text-gray-400 hover:text-white transition-colors relative px-2 py-1"
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <span>{item.title}</span>
+                  <motion.div
+                    className="absolute bottom-0 left-0 w-full h-[2px] bg-red-500 origin-left"
+                    initial={{ scaleX: 0 }}
+                    whileHover={{ scaleX: 1 }}
+                    transition={{ duration: 0.2 }}
+                  />
+                </motion.button>
+              </motion.li>
+            ))}
+          </ul>
+        </nav>
       </motion.header>
 
-      {/* Main Horizontal Scroll Container */}
+      {/* Main Content */}
       <div 
         ref={containerRef}
-        className="h-screen overflow-x-scroll overflow-y-hidden snap-x snap-mandatory"
+        className="h-full overflow-x-scroll overflow-y-hidden"
         style={{ 
           scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-          scrollBehavior: 'smooth'
+          msOverflowStyle: 'none'
         }}
       >
         <div className="flex h-full">
-          {/* Hero Section */}
-          <section className={`${sectionStyle} bg-gradient-to-br from-gray-900 to-gray-800 snap-start`}>
-            <div className="w-full max-w-6xl px-8">
+          <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-gray-900 to-gray-800">
+            <div className="w-full h-full flex items-center justify-center">
               <Hero />
             </div>
-          </section>
+          </div>
 
-          {/* Experience Section */}
-          <section className={`${sectionStyle} bg-gradient-to-br from-gray-800 to-gray-900 snap-start`}>
-            <div className="w-full max-w-6xl px-8">
+          <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-gray-800 to-gray-900">
+            <div className="w-full h-full flex items-center justify-center">
               <Experience />
             </div>
-          </section>
+          </div>
 
-          {/* Projects Section */}
-          <section className={`${sectionStyle} bg-gradient-to-br from-gray-900 to-gray-800 snap-start`}>
-            <div className="w-full max-w-6xl px-8">
+          <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-gray-900 to-gray-800">
+            <div className="w-full h-full flex items-center justify-center">
               <Projects />
             </div>
-          </section>
+          </div>
 
-          {/* Skills Section */}
-          <section className={`${sectionStyle} bg-gradient-to-br from-gray-800 to-gray-900 snap-start`}>
-            <div className="w-full max-w-6xl px-8">
+          <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-gray-800 to-gray-900">
+            <div className="w-full h-full flex items-center justify-center">
               <Skills />
             </div>
-          </section>
+          </div>
         </div>
       </div>
 
@@ -114,35 +149,6 @@ const App: React.FC = () => {
         className="fixed bottom-0 left-0 right-0 h-1 bg-red-500 origin-left"
         style={{ scaleX: scrollXProgress }}
       />
-
-      {/* Section Navigation Dots */}
-      <div className="fixed right-8 top-1/2 transform -translate-y-1/2 flex flex-col gap-4 z-50">
-        {['Home', 'Experience', 'Projects', 'Skills'].map((label, index) => (
-          <motion.button
-            key={index}
-            onClick={() => {
-              const container = containerRef.current;
-              if (container) {
-                container.scrollTo({
-                  left: index * window.innerWidth,
-                  behavior: 'smooth'
-                });
-              }
-            }}
-            className="group relative flex items-center"
-            whileHover={{ scale: 1.2 }}
-          >
-            <span className="absolute right-full mr-4 py-1 px-2 rounded bg-gray-800 text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap text-sm">
-              {label}
-            </span>
-            <motion.div
-              className="w-3 h-3 rounded-full bg-gray-500 hover:bg-red-500 transition-colors"
-              whileHover={{ scale: 1.2 }}
-              whileTap={{ scale: 0.9 }}
-            />
-          </motion.button>
-        ))}
-      </div>
     </div>
   );
 };

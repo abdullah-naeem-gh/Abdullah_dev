@@ -1,104 +1,146 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useEffect, useState } from 'react';
-import { Github, ExternalLink, Mail, MapPin, Phone } from 'lucide-react';
+import React, { useRef, useEffect } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { Github, Mail } from 'lucide-react';
 import { Hero } from './components/Hero';
 import { Experience } from './components/Experience';
 import { Projects } from './components/Projects';
 import { Skills } from './components/Skills';
 
 const App: React.FC = () => {
-  const [currentSection, setCurrentSection] = useState(0);
-  const totalSections = 4;
-  
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollXProgress } = useScroll({
+    container: containerRef,
+  });
+
+  const headerOpacity = useTransform(scrollXProgress, [0, 0.1], [1, 0.6]);
+
+  // Smooth horizontal scrolling with mouse wheel
   useEffect(() => {
-    let scrollTimeout: NodeJS.Timeout;
-    let isScrolling = false;
+    const container = containerRef.current;
+    if (!container) return;
 
-    const handleScroll = (e: WheelEvent) => {
+    const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      
-      if (isScrolling) return;
-      isScrolling = true;
-      
-      const direction = e.deltaY > 0 ? 1 : -1;
-      setCurrentSection(prev => {
-        const next = prev + direction;
-        return next >= 0 && next < totalSections ? next : prev;
-      });
-
-      scrollTimeout = setTimeout(() => {
-        isScrolling = false;
-      }, 1000);
+      const scrollSpeed = 2; // Adjust for faster/slower scrolling
+      container.scrollLeft += e.deltaY * scrollSpeed;
     };
 
-    window.addEventListener('wheel', handleScroll, { passive: false });
-    return () => {
-      window.removeEventListener('wheel', handleScroll);
-      clearTimeout(scrollTimeout);
-    };
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel);
   }, []);
 
+  // Section widths and layout configuration
+  const sectionWidth = "100vw"; // Each section takes full viewport width
+  const sectionStyle = `w-[${sectionWidth}] h-full flex items-center justify-center flex-shrink-0`;
+
   return (
-    <div className="fixed inset-0 bg-gray-900 overflow-hidden">
+    <div className="fixed inset-0 bg-gray-900">
       {/* Navigation Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 p-6 flex justify-between items-center bg-gradient-to-b from-gray-900 to-transparent">
-        <h1 className="text-2xl font-bold text-white">Abdullah Naeem</h1>
-        <div className="flex gap-4">
-          <a href="mailto:n.abdullah.self@gmail.com" className="text-gray-300 hover:text-white">
-            <Mail size={20} />
-          </a>
-          <a href="https://github.com/abdullah-naeem-gh" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white">
-            <Github size={20} />
-          </a>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <div 
-        className="flex transition-transform duration-1000 ease-in-out h-screen"
-        style={{ transform: `translateX(-${currentSection * 100}%)` }}
+      <motion.header 
+        style={{ opacity: headerOpacity }}
+        className="fixed top-0 left-0 right-0 z-50 p-6 flex justify-between items-center bg-gradient-to-b from-gray-900 to-transparent"
       >
-        {/* Hero Section */}
-        <section className="min-w-full h-full flex items-center justify-center p-8 bg-gradient-to-br from-gray-900 to-gray-800">
-          <Hero />
-        </section>
+        <motion.h1 
+          className="text-2xl font-bold text-white"
+          whileHover={{ scale: 1.05 }}
+        >
+          Abdullah Naeem
+        </motion.h1>
+        <div className="flex gap-4">
+          <motion.a
+            href="mailto:n.abdullah.self@gmail.com"
+            className="text-gray-300 hover:text-white transition-colors"
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Mail size={20} />
+          </motion.a>
+          <motion.a
+            href="https://github.com/abdullah-naeem-gh"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-300 hover:text-white transition-colors"
+            whileHover={{ scale: 1.1, rotate: -5 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Github size={20} />
+          </motion.a>
+        </div>
+      </motion.header>
 
-        {/* Experience Section */}
-        <section className="min-w-full h-full flex items-center justify-center p-8 bg-gradient-to-br from-gray-800 to-gray-900">
-          <Experience />
-        </section>
+      {/* Main Horizontal Scroll Container */}
+      <div 
+        ref={containerRef}
+        className="h-screen overflow-x-scroll overflow-y-hidden snap-x snap-mandatory"
+        style={{ 
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          scrollBehavior: 'smooth'
+        }}
+      >
+        <div className="flex h-full">
+          {/* Hero Section */}
+          <section className={`${sectionStyle} bg-gradient-to-br from-gray-900 to-gray-800 snap-start`}>
+            <div className="w-full max-w-6xl px-8">
+              <Hero />
+            </div>
+          </section>
 
-        {/* Projects Section */}
-        <section className="min-w-full h-full flex items-center justify-center p-8 bg-gradient-to-br from-gray-900 to-gray-800">
-          <Projects />
-        </section>
+          {/* Experience Section */}
+          <section className={`${sectionStyle} bg-gradient-to-br from-gray-800 to-gray-900 snap-start`}>
+            <div className="w-full max-w-6xl px-8">
+              <Experience />
+            </div>
+          </section>
 
-        {/* Skills Section */}
-        <section className="min-w-full h-full flex items-center justify-center p-8 bg-gradient-to-br from-gray-800 to-gray-900">
-          <Skills />
-        </section>
+          {/* Projects Section */}
+          <section className={`${sectionStyle} bg-gradient-to-br from-gray-900 to-gray-800 snap-start`}>
+            <div className="w-full max-w-6xl px-8">
+              <Projects />
+            </div>
+          </section>
+
+          {/* Skills Section */}
+          <section className={`${sectionStyle} bg-gradient-to-br from-gray-800 to-gray-900 snap-start`}>
+            <div className="w-full max-w-6xl px-8">
+              <Skills />
+            </div>
+          </section>
+        </div>
       </div>
 
-      {/* Navigation Dots */}
+      {/* Progress Bar */}
+      <motion.div 
+        className="fixed bottom-0 left-0 right-0 h-1 bg-red-500 origin-left"
+        style={{ scaleX: scrollXProgress }}
+      />
+
+      {/* Section Navigation Dots */}
       <div className="fixed right-8 top-1/2 transform -translate-y-1/2 flex flex-col gap-4 z-50">
         {['Home', 'Experience', 'Projects', 'Skills'].map((label, index) => (
-          <button
+          <motion.button
             key={index}
-            onClick={() => setCurrentSection(index)}
-            className={`group relative flex items-center`}
+            onClick={() => {
+              const container = containerRef.current;
+              if (container) {
+                container.scrollTo({
+                  left: index * window.innerWidth,
+                  behavior: 'smooth'
+                });
+              }
+            }}
+            className="group relative flex items-center"
+            whileHover={{ scale: 1.2 }}
           >
             <span className="absolute right-full mr-4 py-1 px-2 rounded bg-gray-800 text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap text-sm">
               {label}
             </span>
-            <div
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                currentSection === index 
-                  ? 'bg-red-500 scale-125' 
-                  : 'bg-gray-500 hover:bg-red-400'
-              }`}
-              aria-label={`Go to ${label} section`}
+            <motion.div
+              className="w-3 h-3 rounded-full bg-gray-500 hover:bg-red-500 transition-colors"
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.9 }}
             />
-          </button>
+          </motion.button>
         ))}
       </div>
     </div>

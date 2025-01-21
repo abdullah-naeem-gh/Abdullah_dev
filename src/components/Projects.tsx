@@ -1,58 +1,65 @@
-// components/Projects.tsx
-import React from "react";
+import { motion } from "framer-motion";
 import { ProjectCard } from "./ProjectCard";
 
 export const Projects: React.FC = () => {
   const projects = [
     {
       title: "Stable Diffusion Dashboard",
-      description:
-        "A dashboard for generating images using Stable Diffusion, deployed via Docker on Runpod Serverless.",
+      description: "A dashboard for generating images using Stable Diffusion, deployed via Docker on Runpod Serverless.",
       tech: ["Docker", "Node.js", "Express.js", "EJS", "Runpod"],
-      demoUrl: "https://sd-dashboard-c95169e-sv2fkmpxsa-uc.a.run.app/",
       githubUrl: "https://github.com/abdullah-naeem-gh/SD-dashboard",
-      imageUrl: "../assets/stronghold/stronghold2.png", // Add image URL
+      demoUrl: "https://sd-dashboard-c95169e-sv2fkmpxsa-uc.a.run.app/",
+      imageUrl: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=2070"
     },
     {
       title: "Image-Based Search Engine",
-      description:
-        "A search engine utilizing vector embeddings for image similarity search.",
+      description: "A search engine utilizing vector embeddings for image similarity search.",
       tech: ["MERN Stack", "Vector DB", "GCP", "MySQL"],
-      demoUrl:
-        "https://cloudrun-frontend-service-683908241893.us-central1.run.app/",
       githubUrl: "https://github.com/abdullah-naeem-gh/image_Searc",
-      imageUrl: "/path/to/image2.jpg", // Add image URL
+      demoUrl: "https://cloudrun-frontend-service-683908241893.us-central1.run.app/",
+      imageUrl: "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=2072"
     },
     {
       title: "The Annoying Traps",
-      description:
-        "A vertical game where players navigate past obstacles using mouse controls.",
+      description: "A vertical game where players navigate past obstacles using mouse controls.",
       tech: ["Python", "Pygame", "Collision Detection"],
-      githubUrl: "https://github.com/someone/the-annoying-traps",
-      imageUrl: "/path/to/image3.jpg", // Add image URL
-    },
+      githubUrl: "https://github.com/abdullah-naeem-gh/the-annoying-traps",
+      imageUrl: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070"
+    }
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2
+      }
+    }
+  };
+
   return (
-    <div className="max-w-7xl mx-auto p-8">
-      <h2 className="text-4xl font-bold text-white mb-12 relative">
-        <span className="bg-gradient-to-r from-red-500 to-red-800 bg-clip-text text-transparent">
-          Projects
-        </span>
-      </h2>
-      <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+    <motion.div
+      className="max-w-6xl mx-auto p-8"
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+    >
+      <motion.h2 
+        className="text-4xl font-bold text-white mb-12 text-center"
+        initial={{ opacity: 0, y: -20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+      >
+        Featured Projects
+      </motion.h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {projects.map((project, index) => (
-          <ProjectCard
-            key={index}
-            title={project.title}
-            description={project.description}
-            tech={project.tech}
-            demoUrl={project.demoUrl}
-            githubUrl={project.githubUrl}
-            imageUrl={project.imageUrl}
-          />
+          <ProjectCard key={index} {...project} />
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 };

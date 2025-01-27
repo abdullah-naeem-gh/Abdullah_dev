@@ -25,6 +25,20 @@ export const Projects: React.FC = () => {
       tech: ["Python", "Pygame", "Collision Detection"],
       githubUrl: "https://github.com/abdullah-naeem-gh/the-annoying-traps",
       imageUrl: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070"
+    },
+    {
+      title: "Stronghold Reckoning",
+      description: "A 2D tower defense game that combines strategic gameplay, resource management, and advanced algorithms.",
+      tech: ["C++", "SFML", "DSA"],
+      githubUrl: "https://github.com/abdullah-naeem-gh/Stronghold_Reckon",
+      imageUrl: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070"
+    },
+    {
+      title: "Islamabad Crime Mapping Dashboard",
+      description: "A Heat Map Visualisation and criminals database handling dashboard for Islamabad.",
+      tech: ["MERN", "MySQL", "Tableau data visualization"],
+      githubUrl: "https://github.com/abdullah-naeem-gh/Crime-Mapping-System",
+      imageUrl: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070"
     }
   ];
 

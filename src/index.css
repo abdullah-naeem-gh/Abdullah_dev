@@ -78,3 +78,21 @@ html {
 .snap-start {
   scroll-snap-align: start;
 }
+
+@keyframes progress {
+  from { width: 0% }
+  to { width: 100% }
+}
+
+.animate-progress {
+  animation: progress 1.5s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 1s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

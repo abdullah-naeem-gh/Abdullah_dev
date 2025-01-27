@@ -4,27 +4,28 @@ import { Briefcase, Calendar } from "lucide-react";
 export const Experience: React.FC = () => {
   const experiences = [
     {
-      title: "MLOps Engineer",
-      company: "Tech Company",
-      period: "2023 - Present",
-      description: "Leading ML pipeline development and deployment using modern MLOps practices.",
+      title: "Software Intern",
+      company: "Mezino Technologies | Lahore | Onsite",
+      period: "Jun 2024 - Sep 2024 • 4 months",
+      description: "Developed and deployed full-stack websites with cloud-based microservices, implemented DevOps practices, and enabled scalable deployment of AI models using modern tools and cloud platforms.",
       achievements: [
-        "Implemented automated ML model training pipelines",
-        "Reduced model deployment time by 60%",
-        "Developed monitoring systems for model performance"
+        "Developed REST APIs with Node.js and Express, using TypeScript and documented with OpenAPI standards.",
+        "Containerized applications using Docker and built CI/CD pipelines with GitHub Actions for seamless deployment.",
+        "Leveraged vector embeddings and deployed large AI models on GCPs Vertex AI Workbench and Runpod for various ML workflows.",
+        "Deployed applications on Google Cloud Run, integrating them with Cloud SQL and Cloud Storage to manage infrastructure effectively with Pulumi."
       ]
     },
-    {
-      title: "Full Stack Developer",
-      company: "Startup Inc",
-      period: "2022 - 2023",
-      description: "Developed and maintained full-stack web applications using modern technologies.",
-      achievements: [
-        "Built scalable microservices architecture",
-        "Implemented real-time features using WebSocket",
-        "Improved application performance by 40%"
-      ]
-    }
+    // {
+    //   title: "Full Stack Developer",
+    //   company: "Startup Inc",
+    //   period: "2022 - 2023",
+    //   description: "Developed and maintained full-stack web applications using modern technologies.",
+    //   achievements: [
+    //     "Built scalable microservices architecture",
+    //     "Implemented real-time features using WebSocket",
+    //     "Improved application performance by 40%"
+    //   ]
+    // }
   ];
 
   const containerVariants = {

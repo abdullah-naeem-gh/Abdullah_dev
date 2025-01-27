@@ -5,6 +5,7 @@ import Hero from './components/Hero';
 import { Experience } from './components/Experience';
 import { Projects } from './components/Projects';
 import { Skills } from './components/Skills';
+import About from './components/About'; // Import the About component
 
 const App: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -17,9 +18,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const element = document.documentElement;
     const container = containerRef.current;
-    
     if (!container) return;
-
     const onWheel = (e: WheelEvent) => {
       if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
         e.preventDefault();
@@ -27,16 +26,15 @@ const App: React.FC = () => {
         container.scrollLeft += e.deltaY * multiplier;
       }
     };
-
     element.addEventListener('wheel', onWheel, { passive: false });
     return () => element.removeEventListener('wheel', onWheel);
   }, []);
 
   const menuItems = [
-    { title: 'About', section: 0 },
-    { title: 'Experience', section: 1 },
-    { title: 'Projects', section: 2 },
-    { title: 'Skills', section: 3 }
+    { title: 'About', section: 1 }, // Adjusted index for correct ordering
+    { title: 'Experience', section: 2 },
+    { title: 'Projects', section: 3 },
+    { title: 'Skills', section: 4 }
   ];
 
   const scrollToSection = (section: number) => {
@@ -52,13 +50,13 @@ const App: React.FC = () => {
   return (
     <div className="h-screen w-screen overflow-hidden bg-gray-900">
       {/* Header */}
-      <motion.header 
+      <motion.header
         style={{ opacity: headerOpacity }}
         className="fixed top-0 left-0 right-0 z-50 px-8 py-6 flex justify-between items-center bg-gradient-to-b from-gray-900 to-transparent"
       >
         {/* Left side - Name and Social Links */}
         <div className="flex items-center gap-6">
-          <motion.h1 
+          <motion.h1
             className="text-2xl font-bold text-white"
             whileHover={{ scale: 1.05 }}
           >
@@ -83,7 +81,6 @@ const App: React.FC = () => {
             </motion.a>
           </div>
         </div>
-
         {/* Right side - Navigation Menu */}
         <nav>
           <ul className="flex gap-8">
@@ -107,12 +104,11 @@ const App: React.FC = () => {
           </ul>
         </nav>
       </motion.header>
-
       {/* Main Content */}
-      <div 
+      <div
         ref={containerRef}
         className="h-full overflow-x-scroll overflow-y-hidden"
-        style={{ 
+        style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none'
         }}
@@ -123,29 +119,30 @@ const App: React.FC = () => {
               <Hero />
             </div>
           </div>
-
           <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-gray-800 to-gray-900">
+            <div className="w-full h-full flex items-center justify-center">
+              <About /> {/* Insert About section here */}
+            </div>
+          </div>
+          <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-gray-900 to-gray-800">
             <div className="w-full h-full flex items-center justify-center">
               <Experience />
             </div>
           </div>
-
-          <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-gray-900 to-gray-800">
+          <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-gray-800 to-gray-900">
             <div className="w-full h-full flex items-center justify-center">
               <Projects />
             </div>
           </div>
-
-          <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-gray-800 to-gray-900">
+          <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-gray-900 to-gray-800">
             <div className="w-full h-full flex items-center justify-center">
               <Skills />
             </div>
           </div>
         </div>
       </div>
-
       {/* Progress Bar */}
-      <motion.div 
+      <motion.div
         className="fixed bottom-0 left-0 right-0 h-1 bg-red-500 origin-left"
         style={{ scaleX: scrollXProgress }}
       />

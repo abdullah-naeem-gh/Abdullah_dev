@@ -8,7 +8,7 @@ export const Projects: React.FC = () => {
       description: "A dashboard for generating images using Stable Diffusion, deployed via Docker on Runpod Serverless.",
       tech: ["Docker", "Node.js", "Express.js", "EJS", "Runpod"],
       githubUrl: "https://github.com/abdullah-naeem-gh/SD-dashboard",
-      demoUrl: "https://sd-dashboard-c95169e-sv2fkmpxsa-uc.a.run.app/",
+      // demoUrl: "https://sd-dashboard-c95169e-sv2fkmpxsa-uc.a.run.app/",
       imageUrl: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=2070"
     },
     {
@@ -16,7 +16,7 @@ export const Projects: React.FC = () => {
       description: "A search engine utilizing vector embeddings for image similarity search.",
       tech: ["MERN Stack", "Vector DB", "GCP", "MySQL"],
       githubUrl: "https://github.com/abdullah-naeem-gh/image_Searc",
-      demoUrl: "https://cloudrun-frontend-service-683908241893.us-central1.run.app/",
+      // demoUrl: "https://cloudrun-frontend-service-683908241893.us-central1.run.app/",
       imageUrl: "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=2072"
     },
     {

@@ -82,7 +82,7 @@ export const Projects: React.FC = () => {
 
   return (
     <motion.div
-      className="max-w-6xl mx-auto p-8"
+      className="max-w-6xl mx-auto p-8 max-h-full overflow-y-auto"
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"

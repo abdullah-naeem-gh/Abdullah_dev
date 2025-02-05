@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
-import { Github, ExternalLink, X } from "lucide-react";
+import { Github, ExternalLink, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface ProjectCardProps {
   title: string;
@@ -11,6 +11,12 @@ interface ProjectCardProps {
   imageUrl?: string;
   longDescription?: string;
   additionalImages?: string[];
+  features?: string[];
+  challenges?: string[];
+  implementation?: string;
+  duration?: string;
+  role?: string;
+  team?: string;
 }
 
 export const ProjectCard: React.FC<ProjectCardProps> = ({
@@ -22,11 +28,30 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   imageUrl,
   longDescription,
   additionalImages = [],
+  features = [],
+  challenges = [],
+  implementation,
+  duration,
+  role,
+  team,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const allImages = [imageUrl, ...(additionalImages || [])].filter(Boolean) as string[];
 
   const handleCardClick = () => {
     setIsModalOpen(true);
+    setCurrentImageIndex(0);
+  };
+
+  const nextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
+  };
+
+  const prevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
   };
 
   return (
@@ -100,85 +125,155 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50"
             onClick={() => setIsModalOpen(false)}
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
-              className="bg-gray-800 rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-gray-800 rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex justify-between items-start mb-4">
-                <h2 className="text-2xl font-bold text-white">{title}</h2>
-                <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-
-              {imageUrl && (
-                <img
-                  src={imageUrl}
-                  alt={title}
-                  className="w-full h-64 object-cover rounded-lg mb-4"
-                />
-              )}
-
-              <p className="text-gray-300 mb-4">{longDescription || description}</p>
-
-              <div className="flex flex-wrap gap-2 mb-4">
-                {tech.map((item, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 text-sm bg-gray-700 text-gray-300 rounded-full"
+              {/* Header */}
+              <div className="p-6 border-b border-gray-700">
+                <div className="flex justify-between items-start">
+                  <h2 className="text-3xl font-bold text-white">{title}</h2>
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="text-gray-400 hover:text-white transition-colors"
                   >
-                    {item}
-                  </span>
-                ))}
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+                {duration && <p className="text-gray-400 mt-2">Duration: {duration}</p>}
+                {role && <p className="text-gray-400">Role: {role}</p>}
+                {team && <p className="text-gray-400">Team: {team}</p>}
               </div>
 
-              {additionalImages && additionalImages.length > 0 && (
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  {additionalImages.map((img, index) => (
-                    <img
-                      key={index}
-                      src={img}
-                      alt={`${title} screenshot ${index + 1}`}
-                      className="w-full h-40 object-cover rounded-lg"
-                    />
-                  ))}
+              {/* Image Gallery */}
+              {allImages.length > 0 && (
+                <div className="relative h-96 bg-gray-900">
+                  <img
+                    src={allImages[currentImageIndex]}
+                    alt={`${title} - image ${currentImageIndex + 1}`}
+                    className="w-full h-full object-contain"
+                  />
+                  {allImages.length > 1 && (
+                    <>
+                      <button
+                        onClick={prevImage}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 p-2 rounded-full text-white hover:bg-opacity-75"
+                      >
+                        <ChevronLeft className="w-6 h-6" />
+                      </button>
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 p-2 rounded-full text-white hover:bg-opacity-75"
+                      >
+                        <ChevronRight className="w-6 h-6" />
+                      </button>
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                        {allImages.map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCurrentImageIndex(index);
+                            }}
+                            className={`w-2 h-2 rounded-full ${
+                              currentImageIndex === index ? 'bg-white' : 'bg-gray-500'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
-              <div className="flex gap-4">
-                <motion.a
-                  href={githubUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-gray-300 hover:text-red-500 transition-colors"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Github className="w-5 h-5" />
-                  <span>View Code</span>
-                </motion.a>
-                {demoUrl && (
+              {/* Content */}
+              <div className="p-6 space-y-6">
+                {/* Overview */}
+                <div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Overview</h3>
+                  <p className="text-gray-300">{longDescription || description}</p>
+                </div>
+
+                {/* Technologies */}
+                <div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Technologies Used</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {tech.map((item, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-gray-700 text-gray-300 rounded-full"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Key Features */}
+                {features.length > 0 && (
+                  <div>
+                    <h3 className="text-xl font-semibold text-white mb-2">Key Features</h3>
+                    <ul className="list-disc list-inside text-gray-300 space-y-1">
+                      {features.map((feature, index) => (
+                        <li key={index}>{feature}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Challenges */}
+                {challenges.length > 0 && (
+                  <div>
+                    <h3 className="text-xl font-semibold text-white mb-2">Challenges & Solutions</h3>
+                    <ul className="list-disc list-inside text-gray-300 space-y-1">
+                      {challenges.map((challenge, index) => (
+                        <li key={index}>{challenge}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Implementation Details */}
+                {implementation && (
+                  <div>
+                    <h3 className="text-xl font-semibold text-white mb-2">Implementation Details</h3>
+                    <p className="text-gray-300">{implementation}</p>
+                  </div>
+                )}
+
+                {/* Links */}
+                <div className="flex gap-4 pt-4">
                   <motion.a
-                    href={demoUrl}
+                    href={githubUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 text-gray-300 hover:text-red-500 transition-colors"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <ExternalLink className="w-5 h-5" />
-                    <span>Live Demo</span>
+                    <Github className="w-5 h-5" />
+                    <span>View Code</span>
                   </motion.a>
-                )}
+                  {demoUrl && (
+                    <motion.a
+                      href={demoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-gray-300 hover:text-red-500 transition-colors"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <ExternalLink className="w-5 h-5" />
+                      <span>Live Demo</span>
+                    </motion.a>
+                  )}
+                </div>
               </div>
             </motion.div>
           </motion.div>

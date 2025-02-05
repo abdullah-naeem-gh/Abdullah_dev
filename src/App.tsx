@@ -4,7 +4,7 @@ import { Github, Mail } from 'lucide-react';
 import Hero from './components/Hero';
 import { Experience } from './components/Experience';
 import { Projects } from './components/Projects';
-import { Skills } from './components/Skills';
+// import { Skills } from './components/Skills';
 import About from './components/About'; // Import the About component
 
 const App: React.FC = () => {
@@ -134,11 +134,11 @@ const App: React.FC = () => {
               <Projects />
             </div>
           </div>
-          <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-background to-surface">
+          {/* <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-background to-surface">
             <div className="w-full h-full flex items-center justify-center">
               <Skills />
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
       {/* Progress Bar */}

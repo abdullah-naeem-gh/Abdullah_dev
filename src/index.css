@@ -5,18 +5,18 @@
 @tailwind utilities;
 
 :root {
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
-  --secondary: #4f46e5;
-  --accent: #8b5cf6;
-  --background: #0f172a;
-  --surface: #1e293b;
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-
+  --primary: #E63946; /* Vibrant Red */
+  --primary-dark: #B71C1C; /* Dark Red for depth */
+  --secondary: #FF6B6B; /* Soft Red for accents and highlights */
+  --accent: #c32222; /* Deep Red to catch attention */
+  --background: #121212; /* Almost Black for a sleek, modern look */
+  --surface: #1E1E1E; /* Dark Gray for foreground elements */
+  --text-primary: #d6cece; /* Very Light Gray for primary text */
+  --text-secondary: #695656; /* Light Gray for less important text */
+  --text-muted: #888888; /* Muted Gray for non-critical text */
   color-scheme: dark;
 }
+
 
 body {
   margin: 0;

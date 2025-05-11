@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Github, Mail } from 'lucide-react';
 import Hero from './components/Hero';
@@ -9,34 +9,120 @@ import About from './components/About'; // Import the About component
 
 const App: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [currentSection, setCurrentSection] = useState(0);
   const { scrollXProgress } = useScroll({
     container: containerRef,
   });
 
   const headerOpacity = useTransform(scrollXProgress, [0, 0.1], [1, 0.6]);
 
+  // Define sections
+  const sections = [
+    { title: 'Home', component: <Hero /> },
+    { title: 'About', component: <About /> },
+    { title: 'Experience', component: <Experience /> },
+    { title: 'Projects', component: <Projects /> },
+    // Uncomment if you want to add Skills back
+    // { title: 'Skills', component: <Skills /> },
+  ];
+
+  // Define menu items to match with sections
+  const menuItems = [
+    { title: 'Home', section: 0 },
+    { title: 'About', section: 1 },
+    { title: 'Experience', section: 2 },
+    { title: 'Projects', section: 3 },
+    // { title: 'Skills', section: 4 },
+  ];
+
   useEffect(() => {
     const element = document.documentElement;
     const container = containerRef.current;
     if (!container) return;
+
+    let isScrolling = false;
+    let lastScrollTime = Date.now();
+
+    const handleSectionChange = (direction: number) => {
+      // Don't process if we're already animating
+      if (isScrolling) return false;
+      
+      // Don't process if we've scrolled too recently
+      const now = Date.now();
+      if (now - lastScrollTime < 500) return false;
+      
+      lastScrollTime = now;
+      
+      // Calculate next section
+      let nextSection = currentSection;
+      if (direction > 0 && currentSection < sections.length - 1) {
+        nextSection = currentSection + 1;
+      } else if (direction < 0 && currentSection > 0) {
+        nextSection = currentSection - 1;
+      } else {
+        // Already at first or last section
+        return false;
+      }
+      
+      // Set flag to prevent multiple scroll events
+      isScrolling = true;
+      
+      // Update state and scroll to the section
+      setCurrentSection(nextSection);
+      const targetScroll = window.innerWidth * nextSection;
+      container.scrollTo({
+        left: targetScroll,
+        behavior: 'smooth',
+      });
+      
+      // Reset flag after animation completes
+      setTimeout(() => {
+        isScrolling = false;
+      }, 1200);
+      
+      return true;
+    };
+
     const onWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        e.preventDefault();
-        const multiplier = 2.5;
-        container.scrollLeft += e.deltaY * multiplier;
+      e.preventDefault();
+      
+      // Determine scroll direction with a lower threshold
+      const direction = e.deltaY > 10 ? 1 : e.deltaY < -10 ? -1 : 0;
+      if (direction === 0) return;
+      
+      handleSectionChange(direction);
+    };
+
+    // Handle keyboard navigation
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        handleSectionChange(1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        handleSectionChange(-1);
       }
     };
+
+    // Prevent default scrolling behavior
+    const preventDefaultScroll = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+      }
+    };
+
+    // Add event listeners
+    element.addEventListener('wheel', preventDefaultScroll, { passive: false });
     element.addEventListener('wheel', onWheel, { passive: false });
-    return () => element.removeEventListener('wheel', onWheel);
-  }, []);
+    element.addEventListener('keydown', onKeyDown);
 
-  const menuItems = [
-    { title: 'About', section: 1 },
-    { title: 'Experience', section: 2 },
-    { title: 'Projects', section: 3 },
-    { title: 'Skills', section: 4 },
-  ];
+    // Clean up
+    return () => {
+      element.removeEventListener('wheel', preventDefaultScroll);
+      element.removeEventListener('wheel', onWheel);
+      element.removeEventListener('keydown', onKeyDown);
+    };
+  }, [currentSection, sections.length]);
 
+  // Update scrollToSection to use the same logic for consistency
   const scrollToSection = (section: number) => {
     if (containerRef.current) {
       const targetScroll = window.innerWidth * section;
@@ -44,6 +130,7 @@ const App: React.FC = () => {
         left: targetScroll,
         behavior: 'smooth',
       });
+      setCurrentSection(section);
     }
   };
 
@@ -88,13 +175,14 @@ const App: React.FC = () => {
               <motion.li key={item.title}>
                 <motion.button
                   onClick={() => scrollToSection(item.section)}
-                  className="text-text-muted hover:text-text-primary transition-colors relative px-2 py-1"
+                  className={`text-${currentSection === item.section ? 'text-primary' : 'text-muted'} hover:text-text-primary transition-colors relative px-2 py-1`}
                   whileHover={{ scale: 1.05 }}
                 >
                   <span>{item.title}</span>
                   <motion.div
                     className="absolute bottom-0 left-0 w-full h-[2px] bg-accent origin-left"
                     initial={{ scaleX: 0 }}
+                    animate={{ scaleX: currentSection === item.section ? 1 : 0 }}
                     whileHover={{ scaleX: 1 }}
                     transition={{ duration: 0.2 }}
                   />
@@ -104,48 +192,53 @@ const App: React.FC = () => {
           </ul>
         </nav>
       </motion.header>
+      
       {/* Main Content */}
       <div
         ref={containerRef}
-        className="h-full overflow-x-scroll overflow-y-hidden"
+        className="h-full overflow-x-scroll overflow-y-hidden snap-x snap-mandatory"
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
         }}
       >
         <div className="flex h-full">
-          <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-background to-surface">
-            <div className="w-full h-full flex items-center justify-center ">
-              <Hero />
+          {sections.map((section, index) => (
+            <div 
+              key={section.title}
+              className={`w-screen h-full flex-shrink-0 snap-center bg-gradient-to-br ${
+                index % 2 === 0 ? 'from-background to-surface' : 'from-surface to-background'
+              }`}
+            >
+              <div className="w-full h-full flex items-center justify-center">
+                {section.component}
+              </div>
             </div>
-          </div>
-          <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-surface to-background">
-            <div className="w-full h-full flex items-center justify-center ">
-              <About /> {/* Insert About section here */}
-            </div>
-          </div>
-          <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-background to-surface">
-            <div className="w-full h-full flex items-center justify-center ">
-              <Experience />
-            </div>
-          </div>
-          <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-surface to-background">
-            <div className="w-full h-full flex items-center justify-center ">
-              <Projects />
-            </div>
-          </div>
-          {/* <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-background to-surface">
-            <div className="w-full h-full flex items-center justify-center pt-20">
-              <Skills />
-            </div>
-          </div> */}
+          ))}
         </div>
       </div>
+      
       {/* Progress Bar */}
       <motion.div
         className="fixed bottom-0 left-0 right-0 h-1 bg-accent origin-left"
         style={{ scaleX: scrollXProgress }}
       />
+      
+      {/* Navigation Dots */}
+      <div className="fixed bottom-8 left-0 right-0 z-50 flex justify-center gap-4">
+        {sections.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => scrollToSection(index)}
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              currentSection === index 
+                ? 'bg-accent w-8' 
+                : 'bg-text-muted hover:bg-text-secondary'
+            }`}
+            aria-label={`Go to section ${index + 1}`}
+          />
+        ))}
+      </div>
     </div>
   );
 };

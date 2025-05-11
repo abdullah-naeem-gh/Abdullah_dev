@@ -115,27 +115,27 @@ const App: React.FC = () => {
       >
         <div className="flex h-full">
           <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-background to-surface">
-            <div className="w-full h-full flex items-center justify-center">
+            <div className="w-full h-full flex items-center justify-center ">
               <Hero />
             </div>
           </div>
           <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-surface to-background">
-            <div className="w-full h-full flex items-center justify-center">
+            <div className="w-full h-full flex items-center justify-center ">
               <About /> {/* Insert About section here */}
             </div>
           </div>
           <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-background to-surface">
-            <div className="w-full h-full flex items-center justify-center">
+            <div className="w-full h-full flex items-center justify-center ">
               <Experience />
             </div>
           </div>
           <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-surface to-background">
-            <div className="w-full h-full flex items-center justify-center">
+            <div className="w-full h-full flex items-center justify-center ">
               <Projects />
             </div>
           </div>
           {/* <div className="w-screen h-full flex-shrink-0 bg-gradient-to-br from-background to-surface">
-            <div className="w-full h-full flex items-center justify-center">
+            <div className="w-full h-full flex items-center justify-center pt-20">
               <Skills />
             </div>
           </div> */}

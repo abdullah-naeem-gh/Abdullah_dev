@@ -146,13 +146,18 @@ const App: React.FC = () => {
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-background">
-      {/* Threads Background */}
-      <Threads 
-        color={[0.9, 0.2, 0.2]} 
-        amplitude={0.8} 
-        distance={0.2} 
-        enableMouseInteraction={true} 
-      />
+      {/* Single global Threads background for non-Hero/About sections */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        {/* Only show global Threads for sections other than Hero and About */}
+        {currentSection !== 0 && currentSection !== 1 && (
+          <Threads 
+            color={[0.9, 0.2, 0.2]} 
+            amplitude={0.8} 
+            distance={0.2} 
+            enableMouseInteraction={true}
+          />
+        )}
+      </div>
 
       {/* Header */}
       <motion.header

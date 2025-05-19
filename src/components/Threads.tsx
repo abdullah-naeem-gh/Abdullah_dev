@@ -1,5 +1,11 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Renderer, Program, Mesh, Triangle, Color } from "ogl";
+
+// Extended types to handle OGL's specific needs
+type OGLRenderingContext = WebGLRenderingContext & {
+  renderer?: Renderer;
+  canvas: HTMLCanvasElement;
+};
 
 interface ThreadsProps {
   color?: [number, number, number];
@@ -7,6 +13,8 @@ interface ThreadsProps {
   distance?: number;
   enableMouseInteraction?: boolean;
   className?: string;
+  position?: "fixed" | "absolute" | "relative";
+  zIndex?: number;
 }
 
 const vertexShader = `
@@ -131,180 +139,228 @@ void main() {
 `;
 
 const Threads: React.FC<ThreadsProps> = ({
-  color = [1, 0.2, 0.2], // Red color to match your theme
+  color = [1, 0.2, 0.2],
   amplitude = 1,
   distance = 0,
   enableMouseInteraction = true,
   className = "",
+  position = "fixed",
+  zIndex = 0,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const animationFrameId = useRef<number>();
   const errorRef = useRef<string | null>(null);
+  const [contextLost, setContextLost] = useState(false);
+  const contextRestoreAttempts = useRef(0);
+  const maxRestoreAttempts = 3;
 
   useEffect(() => {
     if (!containerRef.current) return;
     const container = containerRef.current;
 
-    try {
-      const renderer = new Renderer({ alpha: true });
-      const gl = renderer.gl;
-      gl.clearColor(0, 0, 0, 0);
-      gl.enable(gl.BLEND);
-      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-      container.appendChild(gl.canvas);
-
-      const geometry = new Triangle(gl);
-
-      // Enhanced shader compilation error handling
-      const compileShader = (type: number, source: string): WebGLShader | null => {
-        const shader = gl.createShader(type);
-        if (!shader) {
-          errorRef.current = "Failed to create shader";
-          return null;
-        }
-        
-        gl.shaderSource(shader, source);
-        gl.compileShader(shader);
-        
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-          const error = gl.getShaderInfoLog(shader);
-          errorRef.current = `Shader compilation error: ${error}`;
-          console.error(`Shader compilation error: ${error}`);
-          gl.deleteShader(shader);
-          return null;
-        }
-        
-        return shader;
-      };
-
-      // Try creating the program manually to get better error reporting
-      const vertexShaderObj = compileShader(gl.VERTEX_SHADER, vertexShader);
-      const fragmentShaderObj = compileShader(gl.FRAGMENT_SHADER, fragmentShader);
+    let renderer: Renderer | null = null;
+    let gl: OGLRenderingContext | null = null;
+    let mesh: Mesh | null = null;
+    let program: Program | null = null;
+    
+    // Handle context loss
+    const handleContextLost = (e: Event) => {
+      e.preventDefault();
+      console.log("WebGL context lost");
+      setContextLost(true);
       
-      if (!vertexShaderObj || !fragmentShaderObj) {
-        return;
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+        animationFrameId.current = undefined;
       }
+    };
+    
+    // Handle context restoration
+    const handleContextRestored = () => {
+      console.log("WebGL context restored");
+      setContextLost(false);
+      
+      // Only attempt to restore a limited number of times
+      if (contextRestoreAttempts.current < maxRestoreAttempts) {
+        contextRestoreAttempts.current++;
+        // Wait a bit before reinitializing
+        setTimeout(initializeWebGL, 500);
+      } else {
+        errorRef.current = "Too many WebGL context loss events. Rendering disabled.";
+      }
+    };
 
-      // Create and compile the program with error handling
-      let program: Program;
+    // Mouse position tracking
+    const mousePosition = {
+      current: [0.5, 0.5],
+      target: [0.5, 0.5]
+    };
+    
+    function handleMouseMove(e: MouseEvent) {
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = 1.0 - (e.clientY - rect.top) / rect.height;
+      mousePosition.target = [x, y];
+    }
+    
+    function handleMouseLeave() {
+      mousePosition.target = [0.5, 0.5];
+    }
+    
+    // Add mouse event listeners
+    if (enableMouseInteraction) {
+      container.addEventListener("mousemove", handleMouseMove);
+      container.addEventListener("mouseleave", handleMouseLeave);
+    }
+
+    // Initialize WebGL setup
+    function initializeWebGL() {
       try {
-        program = new Program(gl, {
-          vertex: vertexShader,
-          fragment: fragmentShader,
-          uniforms: {
-            iTime: { value: 0 },
-            iResolution: {
-              value: new Color(
-                gl.canvas.width,
-                gl.canvas.height,
-                gl.canvas.width / gl.canvas.height
-              ),
-            },
-            uColor: { value: new Color(...color) },
-            uAmplitude: { value: amplitude },
-            uDistance: { value: distance },
-            uMouse: { value: new Float32Array([0.5, 0.5]) },
-          },
-        });
-      } catch (err) {
-        console.error("Failed to compile shader program:", err);
-        errorRef.current = `Shader program creation failed: ${err}`;
-        return;
-      }
-
-      const mesh = new Mesh(gl, { geometry, program });
-
-      function resize() {
-        const { clientWidth, clientHeight } = container;
-        renderer.setSize(clientWidth, clientHeight);
-        if (program && program.uniforms && program.uniforms.iResolution) {
-          program.uniforms.iResolution.value.r = clientWidth;
-          program.uniforms.iResolution.value.g = clientHeight;
-          program.uniforms.iResolution.value.b = clientWidth / clientHeight;
+        // Clean up previous instance if exists
+        if (gl && gl.canvas && container.contains(gl.canvas as Node)) {
+          container.removeChild(gl.canvas as Node);
+          gl.getExtension("WEBGL_lose_context")?.loseContext();
         }
-      }
-      window.addEventListener("resize", resize);
-      resize();
 
-      // Use an object to store mouse position that can be mutated
-      const mousePosition = {
-        current: [0.5, 0.5],
-        target: [0.5, 0.5]
-      };
+        renderer = new Renderer({ alpha: true });
+        gl = renderer.gl as OGLRenderingContext;
+        
+        // Add event listeners for context handling
+        if (gl.canvas instanceof HTMLCanvasElement) {
+          gl.canvas.addEventListener('webglcontextlost', handleContextLost);
+          gl.canvas.addEventListener('webglcontextrestored', handleContextRestored);
+        }
+        
+        gl.clearColor(0, 0, 0, 0);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        
+        // Append canvas - with type assertion for safety
+        if (gl.canvas instanceof HTMLCanvasElement) {
+          container.appendChild(gl.canvas);
+        }
 
-      function handleMouseMove(e: MouseEvent) {
-        const rect = container.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / rect.width;
-        const y = 1.0 - (e.clientY - rect.top) / rect.height;
-        mousePosition.target = [x, y];
-      }
-      
-      function handleMouseLeave() {
-        mousePosition.target = [0.5, 0.5];
-      }
-      
-      if (enableMouseInteraction) {
-        container.addEventListener("mousemove", handleMouseMove);
-        container.addEventListener("mouseleave", handleMouseLeave);
-      }
+        const geometry = new Triangle(gl);
 
-      function update(t: number) {
-        if (!program || !program.uniforms) {
-          console.error("Program or uniforms are undefined");
-          errorRef.current = "Program or uniforms are undefined";
+        try {
+          program = new Program(gl, {
+            vertex: vertexShader,
+            fragment: fragmentShader,
+            uniforms: {
+              iTime: { value: 0 },
+              iResolution: {
+                value: new Color(
+                  gl.canvas.width,
+                  gl.canvas.height,
+                  gl.canvas.width / gl.canvas.height
+                ),
+              },
+              uColor: { value: new Color(...color) },
+              uAmplitude: { value: amplitude },
+              uDistance: { value: distance },
+              uMouse: { value: new Float32Array([0.5, 0.5]) },
+            },
+          });
+        } catch (err) {
+          console.error("Failed to compile shader program:", err);
+          errorRef.current = `Shader program creation failed: ${err}`;
           return;
         }
 
-        if (enableMouseInteraction) {
-          const smoothing = 0.05;
-          mousePosition.current[0] += smoothing * (mousePosition.target[0] - mousePosition.current[0]);
-          mousePosition.current[1] += smoothing * (mousePosition.target[1] - mousePosition.current[1]);
-          program.uniforms.uMouse.value[0] = mousePosition.current[0];
-          program.uniforms.uMouse.value[1] = mousePosition.current[1];
-        } else {
-          program.uniforms.uMouse.value[0] = 0.5;
-          program.uniforms.uMouse.value[1] = 0.5;
-        }
-        program.uniforms.iTime.value = t * 0.001;
+        mesh = new Mesh(gl, { geometry, program });
+        resize();
+        
+        // Start animation loop
+        animationFrameId.current = requestAnimationFrame(update);
+      } catch (err) {
+        console.error("WebGL initialization failed:", err);
+        errorRef.current = `WebGL initialization failed: ${err}`;
+      }
+    }
 
-        try {
-          renderer.render({ scene: mesh });
-          if (!errorRef.current) { // Only continue animation if no errors
-            animationFrameId.current = requestAnimationFrame(update);
-          }
-        } catch (err) {
-          console.error("Render error:", err);
-          if (animationFrameId.current) {
-            cancelAnimationFrame(animationFrameId.current);
-          }
-          errorRef.current = `Render error: ${err}`;
-        }
+    function resize() {
+      if (!renderer || !program || !gl) return;
+      
+      const { clientWidth, clientHeight } = container;
+      renderer.setSize(clientWidth, clientHeight);
+      
+      if (program.uniforms && program.uniforms.iResolution) {
+        program.uniforms.iResolution.value.r = clientWidth;
+        program.uniforms.iResolution.value.g = clientHeight;
+        program.uniforms.iResolution.value.b = clientWidth / clientHeight;
+      }
+    }
+    
+    window.addEventListener("resize", resize);
+
+    function update(t: number) {
+      if (!program || !mesh || !renderer || !program.uniforms) {
+        console.error("Required WebGL objects are undefined");
+        return;
+      }
+
+      if (enableMouseInteraction) {
+        const smoothing = 0.05;
+        mousePosition.current[0] += smoothing * (mousePosition.target[0] - mousePosition.current[0]);
+        mousePosition.current[1] += smoothing * (mousePosition.target[1] - mousePosition.current[1]);
+        program.uniforms.uMouse.value[0] = mousePosition.current[0];
+        program.uniforms.uMouse.value[1] = mousePosition.current[1];
+      } else {
+        program.uniforms.uMouse.value[0] = 0.5;
+        program.uniforms.uMouse.value[1] = 0.5;
+      }
+      program.uniforms.iTime.value = t * 0.001;
+
+      try {
+        renderer.render({ scene: mesh });
+        animationFrameId.current = requestAnimationFrame(update);
+      } catch (err) {
+        console.error("Render error:", err);
+        errorRef.current = `Render error: ${err}`;
+      }
+    }
+    
+    // Initialize
+    initializeWebGL();
+
+    return () => {
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
       }
       
-      animationFrameId.current = requestAnimationFrame(update);
-
-      return () => {
-        if (animationFrameId.current) {
-          cancelAnimationFrame(animationFrameId.current);
+      window.removeEventListener("resize", resize);
+      
+      if (enableMouseInteraction && containerRef.current) {
+        containerRef.current.removeEventListener("mousemove", handleMouseMove);
+        containerRef.current.removeEventListener("mouseleave", handleMouseLeave);
+      }
+      
+      // Clean up WebGL context
+      if (gl) {
+        if (gl.canvas instanceof HTMLCanvasElement) {
+          gl.canvas.removeEventListener('webglcontextlost', handleContextLost);
+          gl.canvas.removeEventListener('webglcontextrestored', handleContextRestored);
+          
+          if (container.contains(gl.canvas as Node)) {
+            container.removeChild(gl.canvas as Node);
+          }
         }
-        window.removeEventListener("resize", resize);
-
-        if (enableMouseInteraction) {
-          container.removeEventListener("mousemove", handleMouseMove);
-          container.removeEventListener("mouseleave", handleMouseLeave);
-        }
-        if (container.contains(gl.canvas)) container.removeChild(gl.canvas);
+        
         gl.getExtension("WEBGL_lose_context")?.loseContext();
-      };
-    } catch (err) {
-      console.error("Initialization error:", err);
-      errorRef.current = `Initialization error: ${err}`;
-      return () => {};
-    }
+      }
+    };
   }, [color, amplitude, distance, enableMouseInteraction]);
 
   return (
-    <div ref={containerRef} className={`fixed inset-0 z-0 ${className}`}>
+    <div 
+      ref={containerRef} 
+      className={`${position} inset-0 ${className}`}
+      style={{ zIndex }}
+    >
+      {contextLost && (
+        <div className="absolute inset-0 bg-gradient-to-r from-[var(--primary-dark)] to-[var(--accent)] opacity-30"></div>
+      )}
       {errorRef.current && (
         <div className="absolute inset-0 flex items-center justify-center text-red-500 bg-black bg-opacity-50">
           <div className="p-4 bg-black rounded">

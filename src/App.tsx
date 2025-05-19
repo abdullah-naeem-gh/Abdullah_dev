@@ -1,11 +1,12 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Github, Mail } from 'lucide-react';
+import { GithubIcon, Mail } from 'lucide-react'; // Changed from Github to GithubIcon
 import Hero from './components/Hero';
 import { Experience } from './components/Experience';
 import { Projects } from './components/Projects';
 // import { Skills } from './components/Skills';
-import About from './components/About'; // Import the About component
+import About from './components/About';
+import Threads from './components/Threads';
 
 const App: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -34,7 +35,7 @@ const App: React.FC = () => {
     { title: 'Projects', section: 3 },
     // { title: 'Skills', section: 4 },
   ];
-
+  
   useEffect(() => {
     const element = document.documentElement;
     const container = containerRef.current;
@@ -42,6 +43,14 @@ const App: React.FC = () => {
 
     let isScrolling = false;
     let lastScrollTime = Date.now();
+
+    // Track scroll position for mouse interaction with threads
+    const handleScroll = () => {
+      // Previously setting the unused scrollX state; this is now a no-op
+      // Can be removed entirely or used for something else later
+    };
+    
+    container.addEventListener('scroll', handleScroll);
 
     const handleSectionChange = (direction: number) => {
       // Don't process if we're already animating
@@ -119,6 +128,7 @@ const App: React.FC = () => {
       element.removeEventListener('wheel', preventDefaultScroll);
       element.removeEventListener('wheel', onWheel);
       element.removeEventListener('keydown', onKeyDown);
+      container.removeEventListener('scroll', handleScroll);
     };
   }, [currentSection, sections.length]);
 
@@ -136,6 +146,14 @@ const App: React.FC = () => {
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-background">
+      {/* Threads Background */}
+      <Threads 
+        color={[0.9, 0.2, 0.2]} 
+        amplitude={0.8} 
+        distance={0.2} 
+        enableMouseInteraction={true} 
+      />
+
       {/* Header */}
       <motion.header
         style={{ opacity: headerOpacity }}
@@ -164,10 +182,11 @@ const App: React.FC = () => {
               whileHover={{ scale: 1.1, rotate: -5 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Github size={20} />
+              <GithubIcon size={20} /> {/* Changed from Github to GithubIcon */}
             </motion.a>
           </div>
         </div>
+
         {/* Right side - Navigation Menu */}
         <nav>
           <ul className="flex gap-8">
@@ -196,19 +215,17 @@ const App: React.FC = () => {
       {/* Main Content */}
       <div
         ref={containerRef}
-        className="h-full overflow-x-scroll overflow-y-hidden snap-x snap-mandatory"
+        className="h-full overflow-x-scroll overflow-y-hidden snap-x snap-mandatory relative z-10"
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
         }}
       >
         <div className="flex h-full">
-          {sections.map((section, index) => (
+          {sections.map((section) => ( // Removed unused index parameter
             <div 
               key={section.title}
-              className={`w-screen h-full flex-shrink-0 snap-center bg-gradient-to-br ${
-                index % 2 === 0 ? 'from-background to-surface' : 'from-surface to-background'
-              }`}
+              className="w-screen h-full flex-shrink-0 snap-center bg-transparent"
             >
               <div className="w-full h-full flex items-center justify-center">
                 {section.component}
@@ -220,22 +237,22 @@ const App: React.FC = () => {
       
       {/* Progress Bar */}
       <motion.div
-        className="fixed bottom-0 left-0 right-0 h-1 bg-accent origin-left"
+        className="fixed bottom-0 left-0 right-0 h-1 bg-accent origin-left z-20"
         style={{ scaleX: scrollXProgress }}
       />
       
       {/* Navigation Dots */}
       <div className="fixed bottom-8 left-0 right-0 z-50 flex justify-center gap-4">
-        {sections.map((_, index) => (
+        {sections.map((_, i) => ( // Changed index to i and using it
           <button
-            key={index}
-            onClick={() => scrollToSection(index)}
+            key={i}
+            onClick={() => scrollToSection(i)}
             className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              currentSection === index 
+              currentSection === i
                 ? 'bg-accent w-8' 
                 : 'bg-text-muted hover:bg-text-secondary'
             }`}
-            aria-label={`Go to section ${index + 1}`}
+            aria-label={`Go to section ${i + 1}`}
           />
         ))}
       </div>

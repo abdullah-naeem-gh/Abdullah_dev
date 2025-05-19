@@ -16,7 +16,7 @@ export const Projects: React.FC = () => {
       longDescription:
         "A comprehensive dashboard that leverages Stable Diffusion for AI image generation. The system is containerized using Docker and deployed on Runpod's serverless infrastructure for optimal performance and scalability.",
       tech: ["Docker", "Node.js", "Express.js", "EJS", "Runpod"],
-      categories: ["WEB DEV"],
+      categories: ["Web Dev"],
       githubUrl: "https://github.com/abdullah-naeem-gh/SD-dashboard",
       imageUrl:
         "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=2070",
@@ -27,7 +27,7 @@ export const Projects: React.FC = () => {
       longDescription:
         "An advanced search engine that uses vector embeddings to enable image similarity search. Built with the MERN stack and integrated with vector databases for efficient similarity matching.",
       tech: ["MERN Stack", "Vector DB", "GCP", "MySQL"],
-      categories: ["WEB DEV"],
+      categories: ["Web Dev"],
       githubUrl: "https://github.com/abdullah-naeem-gh/image_Searc",
       imageUrl:
         "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=2072",
@@ -38,7 +38,7 @@ export const Projects: React.FC = () => {
       longDescription:
         "A challenging vertical scrolling game built with Pygame. Players must use precise mouse controls to navigate through increasingly difficult obstacles while avoiding traps.",
       tech: ["Python", "Pygame", "Collision Detection"],
-      categories: ["GAMES"],
+      categories: ["Games"],
       githubUrl: "https://github.com/abdullah-naeem-gh/the-annoying-traps",
       imageUrl:
         "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070",
@@ -50,7 +50,7 @@ export const Projects: React.FC = () => {
       longDescription:
         "A complex tower defense game built with C++ and SFML. Features include strategic resource management, multiple enemy types, and pathfinding algorithms.",
       tech: ["C++", "SFML", "DSA"],
-      categories: ["GAMES"],
+      categories: ["Games"],
       githubUrl: "https://github.com/abdullah-naeem-gh/Stronghold_Reckon",
       imageUrl:
         "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070",
@@ -62,7 +62,7 @@ export const Projects: React.FC = () => {
       longDescription:
         "A comprehensive crime mapping system that visualizes crime data across Islamabad using heat maps. Includes database management for criminal records and advanced data visualization using Tableau.",
       tech: ["MERN", "MySQL", "Tableau data visualization"],
-      categories: ["WEB DEV"],
+      categories: ["Web Dev"],
       githubUrl: "https://github.com/abdullah-naeem-gh/Crime-Mapping-System",
       imageUrl:
         "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070",

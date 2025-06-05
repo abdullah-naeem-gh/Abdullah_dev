@@ -72,7 +72,7 @@ const Hero = () => {
       >
         {/* Bottom layer content (revealed through mask) */}
         <div className="absolute inset-0" style={{
-          backgroundImage: "url('/src/assets/background/image-modified.png')",
+          backgroundImage: "url('/images/image-modified.png')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'

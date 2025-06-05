@@ -16,18 +16,6 @@ export const Experience: React.FC = () => {
         "Deployed applications on Google Cloud Run, integrating them with Cloud SQL and Cloud Storage to manage infrastructure effectively with Pulumi.",
       ],
     },
-    // You can un-comment or add more experiences here
-    // {
-    //   title: "Full Stack Developer",
-    //   company: "Startup Inc",
-    //   period: "2022 - 2023",
-    //   description: "Developed and maintained full-stack web applications using modern technologies.",
-    //   achievements: [
-    //     "Built scalable microservices architecture",
-    //     "Implemented real-time features using WebSocket",
-    //     "Improved application performance by 40%",
-    //   ],
-    // },
   ];
 
   const containerVariants = {
@@ -47,62 +35,62 @@ export const Experience: React.FC = () => {
 
   return (
     <motion.div
-      className="max-w-4xl mx-auto p-8"
+      className="max-w-4xl mx-auto p-3 sm:p-4 md:p-8"
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
     >
       <motion.h2
-        className="text-4xl font-bold text-[var(--text-primary)] mb-12 text-center"
+        className="text-2xl sm:text-3xl md:text-4xl font-bold text-black mb-6 sm:mb-8 md:mb-12 text-center px-2"
         variants={itemVariants}
       >
         Professional Experience
       </motion.h2>
 
       <div className="relative">
-        {/* Vertical timeline line */}
-        <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[var(--primary)] to-[var(--accent)]"></div>
+        {/* Vertical timeline line - hidden on mobile */}
+        <div className="hidden md:block absolute left-6 lg:left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-red-500 to-red-600"></div>
 
         {experiences.map((exp, index) => (
-          <motion.div key={index} className="mb-12 relative" variants={itemVariants}>
-            {/* Circular icon container */}
-            <div className="absolute left-0 w-16 h-16 rounded-full bg-[var(--surface)] border-4 border-[var(--accent)] flex items-center justify-center">
-              <Briefcase className="w-6 h-6 text-[var(--accent)]" />
+          <motion.div key={index} className="mb-6 sm:mb-8 md:mb-12 relative" variants={itemVariants}>
+            {/* Circular icon container - responsive sizing */}
+            <div className="absolute left-0 w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-white border-2 sm:border-3 md:border-4 border-red-500 flex items-center justify-center">
+              <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-red-500" />
             </div>
 
-            {/* Content box */}
-            <div className="ml-24 bg-[var(--surface)] rounded-xl p-6">
-              {/* Title & company */}
-              <div className="flex items-center gap-4 mb-4">
-                <h3 className="text-xl font-bold text-[var(--text-primary)]">
+            {/* Content box - responsive margins and padding */}
+            <div className="ml-14 sm:ml-16 md:ml-24 bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-5 md:p-6">
+              {/* Title & company - responsive layout */}
+              <div className="flex flex-col gap-1 sm:gap-2 md:flex-row md:items-center md:gap-4 mb-3 sm:mb-4">
+                <h3 className="text-lg sm:text-xl md:text-xl font-bold text-black">
                   {exp.title}
                 </h3>
-                <span className="text-[var(--accent)]">•</span>
-                <span className="text-[var(--text-secondary)]">{exp.company}</span>
+                <span className="hidden md:inline text-red-500">•</span>
+                <span className="text-sm sm:text-base text-gray-600">{exp.company}</span>
               </div>
 
               {/* Period */}
-              <div className="flex items-center gap-2 text-[var(--text-secondary)] mb-4">
-                <Calendar className="w-4 h-4" />
-                <span>{exp.period}</span>
+              <div className="flex items-center gap-2 text-gray-600 mb-3 sm:mb-4">
+                <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-sm sm:text-base">{exp.period}</span>
               </div>
 
               {/* Description */}
-              <p className="text-[var(--text-muted)] mb-4">{exp.description}</p>
+              <p className="text-sm sm:text-base text-gray-700 mb-3 sm:mb-4 leading-relaxed">{exp.description}</p>
 
               {/* Achievements */}
-              <ul className="space-y-2">
+              <ul className="space-y-1.5 sm:space-y-2">
                 {exp.achievements.map((achievement, i) => (
                   <motion.li
                     key={i}
-                    className="flex items-start gap-2 text-[var(--text-muted)]"
+                    className="flex items-start gap-2 text-sm sm:text-base text-gray-700 leading-relaxed"
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.1 }}
                   >
-                    <span className="text-[var(--accent)] mt-1">•</span>
-                    {achievement}
+                    <span className="text-red-500 mt-1 text-xs sm:text-sm flex-shrink-0">•</span>
+                    <span>{achievement}</span>
                   </motion.li>
                 ))}
               </ul>

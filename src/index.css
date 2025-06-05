@@ -13,19 +13,19 @@
 @tailwind utilities;
 
 :root {
-  --primary: #E63946; /* Vibrant Red */
-  --primary-dark: #B71C1C; /* Dark Red for depth */
-  --secondary: #FF6B6B; /* Soft Red for accents and highlights */
-  --accent: #c32222; /* Deep Red to catch attention */
-  --background: #FFFFFF; /* White background for image overlay */
-  --surface: #F5F5F5; /* Light Gray for foreground elements */
-  --text-primary: #000000; /* Black for primary text */
-  --text-secondary: #333333; /* Dark Gray for less important text */
-  --text-muted: #666666; /* Medium Gray for non-critical text */
+  --primary: #E63946;
+  --primary-dark: #B71C1C;
+  --secondary: #FF6B6B;
+  --accent: #c32222;
+  --background: #FFFFFF;
+  --surface: #F5F5F5;
+  --text-primary: #000000;
+  --text-secondary: #333333;
+  --text-muted: #666666;
   color-scheme: light;
 }
 
-/* Make sure WebGL canvas takes full size */
+/* Responsive canvas sizing */
 canvas {
   display: block;
   width: 100%;
@@ -42,47 +42,58 @@ body {
   background-attachment: fixed;
   color: var(--text-primary);
   letter-spacing: -0.025em;
-  overflow: hidden; /* Prevent scrollbars */
+  overflow: hidden;
+  
+  /* Mobile-specific optimizations */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
-/* Typography */
+/* Mobile-first responsive background */
+@media (max-width: 768px) {
+  body {
+    background-attachment: scroll; /* Fixed backgrounds can cause issues on mobile */
+    background-size: cover;
+  }
+}
+
+/* Typography - responsive sizing */
 h1, h2, h3, h4, h5, h6 {
   font-family: "Proxima Nova", sans-serif;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 
-/* Radon font for large display text */
+/* Mobile typography adjustments */
+@media (max-width: 640px) {
+  h1 { font-size: 1.875rem; } /* 30px */
+  h2 { font-size: 1.5rem; }   /* 24px */
+  h3 { font-size: 1.25rem; }  /* 20px */
+}
+
 .font-radon {
   font-family: "Radon", "Proxima Nova", sans-serif;
 }
 
-.font-light {
-  font-weight: 300;
-}
+/* Font weights */
+.font-light { font-weight: 300; }
+.font-regular { font-weight: 400; }
+.font-bold { font-weight: 700; }
+.font-extrabold { font-weight: 800; }
+.font-black { font-weight: 900; }
 
-.font-regular {
-  font-weight: 400;
-}
-
-.font-bold {
-  font-weight: 700;
-}
-
-.font-extrabold {
-  font-weight: 800;
-}
-
-.font-black {
-  font-weight: 900;
-}
-
-/* Scrollbar Styles */
+/* Scrollbar - hide on mobile for cleaner look */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
-  display: none; /* Hide scrollbars but keep functionality */
 }
+
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 ::-webkit-scrollbar-track {
   background: var(--surface);
 }
@@ -94,12 +105,18 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--primary);
 }
 
-/* Smooth Scrolling */
+/* Smooth scrolling */
 html {
   scroll-behavior: smooth;
   background: url('./assets/image.png') no-repeat center center fixed;
   background-size: cover;
   background-attachment: fixed;
+}
+
+@media (max-width: 768px) {
+  html {
+    background-attachment: scroll;
+  }
 }
 
 /* Animation Classes */
@@ -108,12 +125,8 @@ html {
 }
 
 @keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: .5;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
 }
 
 /* Enhanced Gradient Text Animation */
@@ -132,15 +145,9 @@ html {
 }
 
 @keyframes gradientMove {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 /* Snap Scrolling */
@@ -178,13 +185,15 @@ html {
   }
 }
 
-/* Hover Effects */
+/* Hover Effects - disable on touch devices */
 .hover-lift {
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.hover-lift:hover {
-  transform: translateY(-4px);
+@media (hover: hover) {
+  .hover-lift:hover {
+    transform: translateY(-4px);
+  }
 }
 
 /* Glass Effect */
@@ -213,16 +222,52 @@ html {
   background: linear-gradient(135deg, var(--primary), var(--accent));
 }
 
-/* Container Max Widths */
+/* Container Max Widths - Mobile First */
 .container {
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 0 1rem;
 }
 
-@media (max-width: 1024px) {
+@media (min-width: 640px) {
   .container {
-    max-width: 100%;
     padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1200px;
+    padding: 0 2rem;
+  }
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 767px) {
+  /* Improve touch targets */
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Prevent text inflation on iOS */
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  /* Smoother scrolling on mobile */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Dark mode support for better mobile experience */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #121212;
+    --surface: #1a1a1a;
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --text-muted: #999999;
   }
 }

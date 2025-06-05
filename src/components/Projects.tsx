@@ -6,7 +6,25 @@ import { Filter } from "lucide-react";
 export const Projects: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
-  const projectsPerPage = 3;
+  
+  // Responsive projects per page
+  const getProjectsPerPage = () => {
+    if (window.innerWidth < 640) return 1; // Mobile: 1 project
+    if (window.innerWidth < 1024) return 2; // Tablet: 2 projects
+    return 3; // Desktop: 3 projects
+  };
+  
+  const [projectsPerPage, setProjectsPerPage] = useState(getProjectsPerPage());
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setProjectsPerPage(getProjectsPerPage());
+      setCurrentPage(0); // Reset to first page on resize
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const projects = [
     {
@@ -69,20 +87,18 @@ export const Projects: React.FC = () => {
     },
   ];
 
-  // Collect unique categories to populate filter buttons
+  // Collect unique categories
   const allCategories = Array.from(
     new Set(projects.flatMap((project) => project.categories))
   ).sort();
 
-  // If a category is selected, show only relevant projects
+  // Filter projects
   const filteredProjects = selectedCategory
     ? projects.filter((project) => project.categories.includes(selectedCategory))
     : projects;
 
-  // Calculate total pages
+  // Calculate pagination
   const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
-  
-  // Get current page's projects
   const currentProjects = filteredProjects.slice(
     currentPage * projectsPerPage,
     (currentPage + 1) * projectsPerPage
@@ -113,41 +129,42 @@ export const Projects: React.FC = () => {
 
   return (
     <motion.div
-      className="max-w-6xl mx-auto p-8 max-h-full overflow-y-auto"
+      className="max-w-7xl mx-auto p-3 sm:p-4 md:p-8 max-h-full overflow-y-auto"
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
     >
       <motion.h2
-        className="text-4xl font-bold text-[var(--text-primary)] mb-8 text-center"
+        className="text-2xl sm:text-3xl md:text-4xl font-bold text-black mb-4 sm:mb-6 md:mb-8 text-center px-2"
         initial={{ opacity: 0, y: -20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
       >
         Featured Projects
       </motion.h2>
+      
       {/* Filter Section */}
-      <div className="mb-8">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <Filter className="w-5 h-5 text-[var(--text-secondary)]" />
-          <span className="text-[var(--text-secondary)]">
+      <div className="mb-4 sm:mb-6 md:mb-8">
+        <div className="flex items-center justify-center gap-2 mb-3 sm:mb-4">
+          <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+          <span className="text-sm sm:text-base text-gray-600">
             Filter by category:
           </span>
         </div>
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
+        <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-4 sm:mb-6 md:mb-8 px-2">
           <motion.button
             variants={filterVariants}
             whileHover="hover"
             whileTap="tap"
-            className={`px-4 py-2 rounded-full text-sm ${
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm ${
               selectedCategory === null
-                ? 'bg-[var(--accent)] text-[var(--text-primary)]'
-                : 'bg-[var(--surface)] text-[var(--text-muted)]'
+                ? 'bg-red-500 text-white'
+                : 'bg-gray-200 text-gray-700'
             }`}
             onClick={() => {
               setSelectedCategory(null);
-              setCurrentPage(0); // Reset to first page when changing categories
+              setCurrentPage(0);
             }}
           >
             All
@@ -158,14 +175,14 @@ export const Projects: React.FC = () => {
               variants={filterVariants}
               whileHover="hover"
               whileTap="tap"
-              className={`px-4 py-2 rounded-full text-sm ${
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm ${
                 selectedCategory === category
-                  ? 'bg-[var(--accent)] text-[var(--text-primary)]'
-                  : 'bg-[var(--surface)] text-[var(--text-muted)]'
+                  ? 'bg-red-500 text-white'
+                  : 'bg-gray-200 text-gray-700'
               }`}
               onClick={() => {
                 setSelectedCategory(category);
-                setCurrentPage(0); // Reset to first page when changing categories
+                setCurrentPage(0);
               }}
             >
               {category}
@@ -178,7 +195,7 @@ export const Projects: React.FC = () => {
       <AnimatePresence mode="wait">
         <motion.div
           key={`${selectedCategory || 'all'}-page-${currentPage}`}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 lg:gap-8 justify-items-center px-2"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
@@ -195,7 +212,7 @@ export const Projects: React.FC = () => {
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center text-[var(--text-secondary)] mt-8"
+          className="text-center text-gray-600 mt-6 sm:mt-8 text-sm sm:text-base px-2"
         >
           No projects found in the selected category.
         </motion.p>
@@ -203,14 +220,14 @@ export const Projects: React.FC = () => {
       
       {/* Pagination Dots */}
       {totalPages > 1 && (
-        <div className="flex justify-center items-center mt-8 gap-2">
+        <div className="flex justify-center items-center mt-4 sm:mt-6 md:mt-8 gap-1.5 sm:gap-2">
           {Array.from({ length: totalPages }).map((_, index) => (
             <motion.button
               key={index}
-              className={`w-3 h-3 rounded-full ${
+              className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full ${
                 currentPage === index 
-                  ? 'bg-[var(--accent)]' 
-                  : 'bg-[var(--surface)]'
+                  ? 'bg-red-500' 
+                  : 'bg-gray-300'
               }`}
               whileHover={{ scale: 1.2 }}
               whileTap={{ scale: 0.9 }}

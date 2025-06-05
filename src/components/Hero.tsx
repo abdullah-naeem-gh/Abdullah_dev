@@ -3,42 +3,70 @@ import { useState, useEffect } from 'react';
 const Hero = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHoveringText, setIsHoveringText] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
     const handleMouseMove = (e: MouseEvent) => {
       setMousePos({ x: e.clientX, y: e.clientY });
     };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+    
+    if (!isMobile) {
+      window.addEventListener('mousemove', handleMouseMove);
+    }
+    
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, [isMobile]);
 
-  const circleRadius = isHoveringText ? 150 : 50;
+  const circleRadius = isHoveringText ? (isMobile ? 100 : 150) : (isMobile ? 30 : 50);
 
   return (
     <section className="relative min-h-screen w-full overflow-hidden">
-      {/* Top layer (normal content) - make background transparent */}
+      {/* Top layer (normal content) */}
       <div className="absolute inset-0 z-10">
-        {/* Main visible content */}
-        <div className="absolute inset-0 flex items-center justify-center z-20">
+        <div className="absolute inset-0 flex items-center justify-center z-20 px-4">
           <div 
             className="text-center"
-            onMouseEnter={() => setIsHoveringText(true)}
-            onMouseLeave={() => setIsHoveringText(false)}
+            onMouseEnter={() => !isMobile && setIsHoveringText(true)}
+            onMouseLeave={() => !isMobile && setIsHoveringText(false)}
+            onTouchStart={() => isMobile && setIsHoveringText(true)}
+            onTouchEnd={() => isMobile && setIsHoveringText(false)}
           >
-            <h1 className="text-8xl font-bold font-radon text-[var(--text-primary)] mb-4">MAKING</h1>
-            <h1 className="text-8xl font-bold font-radon text-[var(--text-primary)] mb-4">GOOD</h1>
-            <h1 className="text-8xl font-bold font-radon text-[var(--text-primary)] mb-4">STUFF</h1>
-            <h1 className="text-8xl font-bold font-radon text-[var(--text-primary)] mb-4">SINCE</h1>
-            <h1 className="text-8xl font-bold font-radon text-[var(--text-primary)]">2023</h1>
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold font-radon text-black mb-2 md:mb-4 leading-tight">
+              MAKING
+            </h1>
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold font-radon text-black mb-2 md:mb-4 leading-tight">
+              GOOD
+            </h1>
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold font-radon text-black mb-2 md:mb-4 leading-tight">
+              STUFF
+            </h1>
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold font-radon text-black mb-2 md:mb-4 leading-tight">
+              SINCE
+            </h1>
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold font-radon text-black leading-tight">
+              2023
+            </h1>
           </div>
         </div>
       </div>
       
-      {/* Circle reveal cutout - position absolute on top of everything */}
+      {/* Circle reveal cutout */}
       <div 
         className="absolute inset-0 z-30 pointer-events-none"
         style={{
-          clipPath: `circle(${circleRadius}px at ${mousePos.x}px ${mousePos.y}px)`,
+          clipPath: isMobile 
+            ? `circle(${circleRadius}px at 50% 50%)` 
+            : `circle(${circleRadius}px at ${mousePos.x}px ${mousePos.y}px)`,
           transition: 'clip-path 0.3s ease-out'
         }}
       >
@@ -49,14 +77,23 @@ const Hero = () => {
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
         }}>
-          {/* Content that appears through the mask */}
-          <div className="absolute inset-0 flex items-center justify-center z-10">
+          <div className="absolute inset-0 flex items-center justify-center z-10 px-4">
             <div className="text-center">
-              <h1 className="text-8xl font-bold font-radon text-white mb-4">HIDING</h1>
-              <h1 className="text-8xl font-bold font-radon text-white mb-4">BAD</h1>
-              <h1 className="text-8xl font-bold font-radon text-white mb-4">STUFF</h1>
-              <h1 className="text-8xl font-bold font-radon text-white mb-4">SINCE</h1>
-              <h1 className="text-8xl font-bold font-radon text-white">2023</h1>
+              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold font-radon text-white mb-2 md:mb-4 leading-tight">
+                HIDING
+              </h1>
+              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold font-radon text-white mb-2 md:mb-4 leading-tight">
+                BAD
+              </h1>
+              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold font-radon text-white mb-2 md:mb-4 leading-tight">
+                STUFF
+              </h1>
+              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold font-radon text-white mb-2 md:mb-4 leading-tight">
+                SINCE
+              </h1>
+              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold font-radon text-white leading-tight">
+                2023
+              </h1>
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 
 const About = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isHoveringText, setIsHoveringText] = useState(false);
 
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
@@ -11,13 +12,19 @@ const About = () => {
     return () => window.removeEventListener('mousemove', onMouseMove);
   }, []);
 
+  const circleRadius = isHoveringText ? 150 : 50;
+
   return (
     <div className="relative h-screen w-full overflow-hidden">
       {/* Top layer (normal content) - make background transparent */}
       <div className="absolute inset-0 z-10">
         {/* Content that sits on top */}
         <div className="absolute inset-0 flex items-center justify-center z-20">
-          <div className="text-center max-w-4xl px-6">
+          <div 
+            className="text-center max-w-4xl px-6"
+            onMouseEnter={() => setIsHoveringText(true)}
+            onMouseLeave={() => setIsHoveringText(false)}
+          >
             <h2 className="text-2xl font-medium text-[var(--text-secondary)] mb-8">ABOUT ME</h2>
             <p className="text-6xl font-bold font-radon text-[var(--text-primary)] leading-tight">
               I'm a skilled AI web and app developer creating high-quality, impactful
@@ -31,7 +38,8 @@ const About = () => {
       <div 
         className="absolute inset-0 z-30 pointer-events-none"
         style={{
-          clipPath: `circle(150px at ${mousePos.x}px ${mousePos.y}px)`,
+          clipPath: `circle(${circleRadius}px at ${mousePos.x}px ${mousePos.y}px)`,
+          transition: 'clip-path 0.3s ease-out'
         }}
       >
         {/* Bottom layer content (revealed through mask) */}

@@ -19,7 +19,7 @@ const About = () => {
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="text-center max-w-4xl px-6">
             <h2 className="text-2xl font-medium text-[var(--text-secondary)] mb-8">ABOUT ME</h2>
-            <p className="text-6xl font-bold text-[var(--text-primary)] leading-tight">
+            <p className="text-6xl font-bold font-radon text-[var(--text-primary)] leading-tight">
               I'm a skilled AI web and app developer creating high-quality, impactful
               digital experiences.
             </p>
@@ -35,12 +35,17 @@ const About = () => {
         }}
       >
         {/* Bottom layer content (revealed through mask) */}
-        <div className="absolute inset-0 bg-[var(--accent)]">
+        <div className="absolute inset-0" style={{
+          backgroundImage: "url('src/assets/background/image-modified.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}>
           {/* Content that appears through the mask */}
           <div className="absolute inset-0 flex items-center justify-center z-10">
             <div className="text-center max-w-4xl px-6">
-              <h2 className="text-2xl font-medium text-black mb-8">ABOUT ME</h2>
-              <p className="text-6xl font-bold text-black leading-tight">
+              <h2 className="text-2xl font-medium text-white mb-8">ABOUT ME</h2>
+              <p className="text-6xl font-bold font-radon text-white leading-tight">
                 An AI developer creating innovative digital experiences—at least until
                 AI decides it doesn't need me anymore.
               </p>

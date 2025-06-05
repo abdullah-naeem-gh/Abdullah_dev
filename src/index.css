@@ -1,5 +1,13 @@
 @import './assets/styles/fonts.css';
 
+@font-face {
+  font-family: 'Radon';
+  src: url('./assets/fonts/radon.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,12 +17,12 @@
   --primary-dark: #B71C1C; /* Dark Red for depth */
   --secondary: #FF6B6B; /* Soft Red for accents and highlights */
   --accent: #c32222; /* Deep Red to catch attention */
-  --background: #121212; /* Almost Black for a sleek, modern look */
-  --surface: #1E1E1E; /* Dark Gray for foreground elements */
-  --text-primary: #d6cece; /* Very Light Gray for primary text */
-  --text-secondary: #695656; /* Light Gray for less important text */
-  --text-muted: #888888; /* Muted Gray for non-critical text */
-  color-scheme: dark;
+  --background: #FFFFFF; /* White background for image overlay */
+  --surface: #F5F5F5; /* Light Gray for foreground elements */
+  --text-primary: #000000; /* Black for primary text */
+  --text-secondary: #333333; /* Dark Gray for less important text */
+  --text-muted: #666666; /* Medium Gray for non-critical text */
+  color-scheme: light;
 }
 
 /* Make sure WebGL canvas takes full size */
@@ -29,7 +37,9 @@ body {
   font-family: "Proxima Nova", -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--background);
+  background: url('./assets/background/image.png') no-repeat center center fixed;
+  background-size: cover;
+  background-attachment: fixed;
   color: var(--text-primary);
   letter-spacing: -0.025em;
   overflow: hidden; /* Prevent scrollbars */
@@ -40,6 +50,11 @@ h1, h2, h3, h4, h5, h6 {
   font-family: "Proxima Nova", sans-serif;
   font-weight: 700;
   letter-spacing: -0.02em;
+}
+
+/* Radon font for large display text */
+.font-radon {
+  font-family: "Radon", "Proxima Nova", sans-serif;
 }
 
 .font-light {
@@ -82,7 +97,9 @@ h1, h2, h3, h4, h5, h6 {
 /* Smooth Scrolling */
 html {
   scroll-behavior: smooth;
-  background: var(--background);
+  background: url('./assets/image.png') no-repeat center center fixed;
+  background-size: cover;
+  background-attachment: fixed;
 }
 
 /* Animation Classes */

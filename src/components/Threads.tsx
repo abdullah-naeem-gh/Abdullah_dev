@@ -310,7 +310,7 @@ const Threads: React.FC<ThreadsProps> = ({
         program.uniforms.uMouse.value[0] = 0.5;
         program.uniforms.uMouse.value[1] = 0.5;
       }
-      program.uniforms.iTime.value = t * 0.001;
+      program.uniforms.iTime.value = t * 0.0003; // Reduced from 0.001 to 0.0005 for slower animation
 
       try {
         renderer.render({ scene: mesh });

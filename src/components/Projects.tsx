@@ -2,6 +2,13 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import { ProjectCard } from "./ProjectCard";
 import { Filter } from "lucide-react";
+import stronghold3 from "../assets/images/stronghold3.png";
+import crimevision from "../assets/images/crimevision.png";
+import sd from "../assets/images/sd.png";
+import slime from "../assets/images/slime.png";
+
+
+
 
 export const Projects: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -28,6 +35,19 @@ export const Projects: React.FC = () => {
 
   const projects = [
     {
+      title: "Crime Analysis and Predictions Platform",
+      description:
+        "A platform for analyzing and predicting crime trends in Islamabad.",
+      longDescription:
+        "Includes Data management for authorized users, crime data visualizations in form of charts and maps, crime trend analysis and Safest Path from one location to another",
+      tech: ["MERN", "postgreSQL", "Gemini", "redis"],
+      categories: ["Web Dev"],
+      githubUrl: "https://github.com/abdullah-naeem-gh/Crime-Mapping-System",
+      demoUrl: "https://www.crimevision.live/", // Replace with your actual website URL
+      imageUrl:
+        crimevision,
+    },
+    {
       title: "Stable Diffusion Dashboard",
       description:
         "A dashboard for generating images using Stable Diffusion, deployed via Docker on Runpod Serverless.",
@@ -37,7 +57,7 @@ export const Projects: React.FC = () => {
       categories: ["Web Dev"],
       githubUrl: "https://github.com/abdullah-naeem-gh/SD-dashboard",
       imageUrl:
-        "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=2070",
+        sd,
     },
     {
       title: "Image-Based Search Engine",
@@ -59,7 +79,7 @@ export const Projects: React.FC = () => {
       categories: ["Games"],
       githubUrl: "https://github.com/abdullah-naeem-gh/the-annoying-traps",
       imageUrl:
-        "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070",
+       slime,
     },
     {
       title: "Stronghold Reckoning",
@@ -70,21 +90,9 @@ export const Projects: React.FC = () => {
       tech: ["C++", "SFML", "DSA"],
       categories: ["Games"],
       githubUrl: "https://github.com/abdullah-naeem-gh/Stronghold_Reckon",
-      imageUrl:
-        "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070",
+      imageUrl: stronghold3,
     },
-    {
-      title: "Islamabad Crime Mapping Dashboard",
-      description:
-        "A Heat Map Visualisation and criminals database handling dashboard for Islamabad.",
-      longDescription:
-        "A comprehensive crime mapping system that visualizes crime data across Islamabad using heat maps. Includes database management for criminal records and advanced data visualization using Tableau.",
-      tech: ["MERN", "MySQL", "Tableau data visualization"],
-      categories: ["Web Dev"],
-      githubUrl: "https://github.com/abdullah-naeem-gh/Crime-Mapping-System",
-      imageUrl:
-        "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070",
-    },
+    
   ];
 
   // Collect unique categories

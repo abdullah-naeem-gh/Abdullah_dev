@@ -123,13 +123,13 @@ const Slide = ({ slide, index, current, handleSlideClick, onViewProject }: Slide
               </span>
             ))}
           </div>
-          <div className="flex justify-center gap-3">
+          <div className="flex justify-center gap-2 flex-wrap isolate">
             <motion.button
               onClick={(e) => {
                 e.stopPropagation();
                 onViewProject(slide);
               }}
-              className="px-4 py-2 bg-white text-black rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
+              className="px-4 py-2 bg-white text-black rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors relative z-10"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -140,12 +140,25 @@ const Slide = ({ slide, index, current, handleSlideClick, onViewProject }: Slide
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="px-4 py-2 bg-transparent border border-white text-white rounded-lg text-sm font-medium hover:bg-white hover:text-black transition-colors"
+              className="px-4 py-2 bg-transparent border border-white text-white rounded-lg text-sm font-medium hover:bg-white hover:text-black transition-colors relative z-10"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               View Code
             </motion.a>
+            {slide.demoUrl && (
+              <motion.a
+                href={slide.demoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600 transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Live Demo
+              </motion.a>
+            )}
           </div>
         </article>
       </div>

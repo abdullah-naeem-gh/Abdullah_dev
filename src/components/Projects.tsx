@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { ProjectCard } from "./ProjectCard";
 import { Filter } from "lucide-react";
 import { Carousel } from "./ui/Carousel";
@@ -8,9 +8,30 @@ import crimevision from "../assets/images/crimevision.png";
 import sd from "../assets/images/sd.png";
 import slime from "../assets/images/slime.png";
 
+interface Project {
+  title: string;
+  description: string;
+  longDescription: string;
+  tech: string[];
+  categories: string[];
+  githubUrl: string;
+  demoUrl?: string;
+  imageUrl: string;
+}
+
+interface ProjectSlideData {
+  title: string;
+  description: string;
+  tech: string[];
+  imageUrl?: string;
+  githubUrl: string;
+  demoUrl?: string;
+  longDescription?: string;
+}
+
 export const Projects: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   const projects = [
     {
@@ -19,7 +40,7 @@ export const Projects: React.FC = () => {
       longDescription: "Includes Data management for authorized users, crime data visualizations in form of charts and maps, crime trend analysis and Safest Path from one location to another",
       tech: ["MERN", "postgreSQL", "Gemini", "redis"],
       categories: ["Web Dev"],
-      githubUrl: "https://github.com/abdullah-naeem-gh/Crime-Mapping-System",
+      githubUrl: "https://github.com/abdullah-naeem-gh/Crime_Analysis_backend",
       demoUrl: "https://www.crimevision.live/",
       imageUrl: crimevision,
     },
@@ -71,8 +92,12 @@ export const Projects: React.FC = () => {
     ? projects.filter((project) => project.categories.includes(selectedCategory))
     : projects;
 
-  const handleViewProject = (project: any) => {
-    setSelectedProject(project);
+  const handleViewProject = (slideProject: ProjectSlideData) => {
+    // Find the full project data from our projects array
+    const fullProject = projects.find(p => p.title === slideProject.title);
+    if (fullProject) {
+      setSelectedProject(fullProject);
+    }
   };
 
   // Animations

@@ -45,7 +45,17 @@ const App: React.FC = () => {
     let touchStartY = 0;
 
     const handleScroll = () => {
-      // Track scroll position for threads interaction
+      // Track scroll position for threads interaction and update current section
+      if (!isScrolling && container) {
+        const scrollLeft = container.scrollLeft;
+        const sectionWidth = window.innerWidth;
+        const newSection = Math.round(scrollLeft / sectionWidth);
+        
+        // Only update if the section actually changed
+        if (newSection !== currentSection && newSection >= 0 && newSection < sections.length) {
+          setCurrentSection(newSection);
+        }
+      }
     };
     
     container.addEventListener('scroll', handleScroll);
@@ -58,26 +68,38 @@ const App: React.FC = () => {
       
       lastScrollTime = now;
       
+      // Calculate next section
       let nextSection = currentSection;
       if (direction > 0 && currentSection < sections.length - 1) {
         nextSection = currentSection + 1;
       } else if (direction < 0 && currentSection > 0) {
         nextSection = currentSection - 1;
       } else {
+        // Already at the boundary, don't do anything
         return false;
       }
       
       isScrolling = true;
       
+      // Update the section state immediately for visual feedback
       setCurrentSection(nextSection);
+      
+      // Calculate the exact scroll position for the target section
       const targetScroll = window.innerWidth * nextSection;
+      
+      // Perform the scroll
       container.scrollTo({
         left: targetScroll,
         behavior: 'smooth',
       });
       
+      // Reset scrolling flag after animation completes
       setTimeout(() => {
         isScrolling = false;
+        // Ensure we're exactly at the right position after smooth scroll
+        if (container.scrollLeft !== targetScroll) {
+          container.scrollLeft = targetScroll;
+        }
       }, 1200);
       
       return true;
@@ -104,15 +126,35 @@ const App: React.FC = () => {
     };
 
     const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
+      // Determine if this is primarily a horizontal or vertical scroll
+      const isHorizontalScroll = Math.abs(e.deltaX) > Math.abs(e.deltaY);
+      const isVerticalScroll = Math.abs(e.deltaY) > Math.abs(e.deltaX);
       
-      const direction = e.deltaY > 10 ? 1 : e.deltaY < -10 ? -1 : 0;
-      if (direction === 0) return;
+      let direction = 0;
       
-      handleSectionChange(direction);
+      if (isHorizontalScroll) {
+        // Handle horizontal wheel/trackpad scroll
+        direction = e.deltaX > 10 ? 1 : e.deltaX < -10 ? -1 : 0;
+      } else if (isVerticalScroll) {
+        // Handle vertical wheel scroll (convert to horizontal navigation)
+        direction = e.deltaY > 10 ? 1 : e.deltaY < -10 ? -1 : 0;
+      }
+      
+      if (direction !== 0) {
+        e.preventDefault();
+        handleSectionChange(direction);
+      }
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
+      // Only handle arrow keys if no input elements are focused
+      if (document.activeElement?.tagName === 'INPUT' || 
+          document.activeElement?.tagName === 'TEXTAREA') {
+        return;
+      }
+      
+      e.preventDefault();
+      
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         handleSectionChange(1);
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
@@ -121,12 +163,26 @@ const App: React.FC = () => {
     };
 
     const preventDefaultScroll = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      // Only prevent scroll if it's likely to trigger our section navigation
+      const isHorizontalScroll = Math.abs(e.deltaX) > Math.abs(e.deltaY);
+      const isVerticalScroll = Math.abs(e.deltaY) > Math.abs(e.deltaX);
+      
+      if ((isHorizontalScroll && Math.abs(e.deltaX) > 10) || 
+          (isVerticalScroll && Math.abs(e.deltaY) > 10)) {
         e.preventDefault();
       }
     };
 
+    // Handle window resize to adjust scroll position
+    const handleResize = () => {
+      if (container && !isScrolling) {
+        const targetScroll = window.innerWidth * currentSection;
+        container.scrollLeft = targetScroll;
+      }
+    };
+
     // Add event listeners
+    window.addEventListener('resize', handleResize);
     element.addEventListener('wheel', preventDefaultScroll, { passive: false });
     element.addEventListener('wheel', onWheel, { passive: false });
     element.addEventListener('keydown', onKeyDown);
@@ -134,6 +190,7 @@ const App: React.FC = () => {
     element.addEventListener('touchend', onTouchEnd, { passive: true });
 
     return () => {
+      window.removeEventListener('resize', handleResize);
       element.removeEventListener('wheel', preventDefaultScroll);
       element.removeEventListener('wheel', onWheel);
       element.removeEventListener('keydown', onKeyDown);
@@ -144,7 +201,7 @@ const App: React.FC = () => {
   }, [currentSection, sections.length]);
 
   const scrollToSection = (section: number) => {
-    if (containerRef.current) {
+    if (containerRef.current && section >= 0 && section < sections.length) {
       const targetScroll = window.innerWidth * section;
       containerRef.current.scrollTo({
         left: targetScroll,

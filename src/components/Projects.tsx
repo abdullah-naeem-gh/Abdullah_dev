@@ -183,7 +183,7 @@ export const Projects: React.FC = () => {
 
       {/* Carousel */}
       {filteredProjects.length > 0 ? (
-        <div className="relative overflow-visible w-full h-full py-2 px-4 flex justify-center">
+        <div className="relative overflow-visible w-full h-full py-2 sm:py-4 px-2 sm:px-4 flex justify-center">
           <Carousel slides={filteredProjects} onViewProject={handleViewProject} />
         </div>
       ) : (

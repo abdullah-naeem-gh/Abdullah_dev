@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const Hero = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHoveringText, setIsHoveringText] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [animatedRadius, setAnimatedRadius] = useState(30);
+  const animationRef = useRef<number>();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -27,7 +29,34 @@ const Hero = () => {
     };
   }, [isMobile]);
 
-  const circleRadius = isHoveringText ? (isMobile ? 100 : 150) : (isMobile ? 30 : 50);
+  // Smooth radius animation
+  useEffect(() => {
+    const targetRadius = isHoveringText ? (isMobile ? 100 : 150) : (isMobile ? 30 : 50);
+    
+    const animateRadius = () => {
+      setAnimatedRadius(current => {
+        const diff = targetRadius - current;
+        const step = diff * 0.1; // Smooth animation speed
+        
+        if (Math.abs(diff) < 0.5) {
+          return targetRadius;
+        }
+        
+        animationRef.current = requestAnimationFrame(animateRadius);
+        return current + step;
+      });
+    };
+    
+    animationRef.current = requestAnimationFrame(animateRadius);
+    
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [isHoveringText, isMobile]);
+
+  const circleRadius = Math.round(animatedRadius);
 
   return (
     <section className="relative min-h-screen w-full overflow-hidden">
@@ -66,8 +95,7 @@ const Hero = () => {
         style={{
           clipPath: isMobile 
             ? `circle(${circleRadius}px at 50% 50%)` 
-            : `circle(${circleRadius}px at ${mousePos.x}px ${mousePos.y}px)`,
-          transition: 'clip-path 0.3s ease-out'
+            : `circle(${circleRadius}px at ${mousePos.x}px ${mousePos.y}px)`
         }}
       >
         {/* Bottom layer content (revealed through mask) */}

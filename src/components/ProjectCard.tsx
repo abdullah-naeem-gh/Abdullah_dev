@@ -120,7 +120,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                       <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                     </button>
                     {/* Dots below for indicating current image */}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1 sm:gap-2">
                       {allImages.map((_, index) => (
                         <button
                           key={index}
@@ -128,7 +128,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                             e.stopPropagation();
                             setCurrentImageIndex(index);
                           }}
-                          className={`w-2 h-2 rounded-full ${
+                          className={`w-1 h-1 sm:w-2 sm:h-2 rounded-full ${
                             currentImageIndex === index
                               ? 'bg-white'
                               : 'bg-white/50'

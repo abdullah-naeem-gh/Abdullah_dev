@@ -190,9 +190,8 @@ const Threads: React.FC<ThreadsProps> = ({
       }
     };
 
-    // Mouse position tracking
+    // Mouse position tracking - simplified for direct response
     const mousePosition = {
-      current: [0.5, 0.5],
       target: [0.5, 0.5]
     };
     
@@ -301,11 +300,9 @@ const Threads: React.FC<ThreadsProps> = ({
       }
 
       if (enableMouseInteraction) {
-        const smoothing = 0.05;
-        mousePosition.current[0] += smoothing * (mousePosition.target[0] - mousePosition.current[0]);
-        mousePosition.current[1] += smoothing * (mousePosition.target[1] - mousePosition.current[1]);
-        program.uniforms.uMouse.value[0] = mousePosition.current[0];
-        program.uniforms.uMouse.value[1] = mousePosition.current[1];
+        // Direct mouse tracking without smoothing for instant response
+        program.uniforms.uMouse.value[0] = mousePosition.target[0];
+        program.uniforms.uMouse.value[1] = mousePosition.target[1];
       } else {
         program.uniforms.uMouse.value[0] = 0.5;
         program.uniforms.uMouse.value[1] = 0.5;

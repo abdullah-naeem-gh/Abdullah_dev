@@ -46,7 +46,7 @@ const About = () => {
       // Run animation every frame for smoother circle transitions
       setAnimatedRadius(current => {
         const diff = targetRadius - current;
-        const step = diff * 0.04; // Slower animation speed (reduced from 0.1 to 0.04)
+        const step = diff * 0.15; // Faster animation speed
         
         if (Math.abs(diff) < 0.5) {
           isAnimating = false;

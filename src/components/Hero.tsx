@@ -39,21 +39,13 @@ const Hero = () => {
   useEffect(() => {
     const targetRadius = isHoveringText ? (isMobile ? 100 : 150) : (isMobile ? 30 : 50);
     let isAnimating = true;
-    let frameCount = 0;
     
     const animateRadius = () => {
       if (!isAnimating) return;
       
-      // Skip frames for better performance
-      frameCount++;
-      if (frameCount % 2 === 0) {
-        animationRef.current = requestAnimationFrame(animateRadius);
-        return;
-      }
-      
       setAnimatedRadius(current => {
         const diff = targetRadius - current;
-        const step = diff * 0.12; // Slightly slower animation
+        const step = diff * 0.25; // Faster animation speed
         
         if (Math.abs(diff) < 1) {
           isAnimating = false;

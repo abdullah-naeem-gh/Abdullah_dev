@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 const Hero = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -6,6 +6,16 @@ const Hero = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [animatedRadius, setAnimatedRadius] = useState(30);
   const animationRef = useRef<number>();
+  const lastUpdateTime = useRef(0);
+
+  // Throttled mouse move handler for better performance
+  const throttledMouseMove = useCallback((e: MouseEvent) => {
+    const now = Date.now();
+    if (now - lastUpdateTime.current > 32) { // Reduced from 16 to 32ms (~30fps)
+      setMousePos({ x: e.clientX, y: e.clientY });
+      lastUpdateTime.current = now;
+    }
+  }, []);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -14,35 +24,45 @@ const Hero = () => {
     
     checkMobile();
     window.addEventListener('resize', checkMobile);
-
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    };
     
     if (!isMobile) {
-      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mousemove', throttledMouseMove, { passive: true });
     }
     
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mousemove', throttledMouseMove);
       window.removeEventListener('resize', checkMobile);
     };
-  }, [isMobile]);
+  }, [isMobile, throttledMouseMove]);
 
-  // Smooth radius animation
+  // Optimized radius animation with requestAnimationFrame throttling
   useEffect(() => {
     const targetRadius = isHoveringText ? (isMobile ? 100 : 150) : (isMobile ? 30 : 50);
+    let isAnimating = true;
+    let frameCount = 0;
     
     const animateRadius = () => {
+      if (!isAnimating) return;
+      
+      // Skip frames for better performance
+      frameCount++;
+      if (frameCount % 2 === 0) {
+        animationRef.current = requestAnimationFrame(animateRadius);
+        return;
+      }
+      
       setAnimatedRadius(current => {
         const diff = targetRadius - current;
-        const step = diff * 0.1; // Smooth animation speed
+        const step = diff * 0.12; // Slightly slower animation
         
-        if (Math.abs(diff) < 0.5) {
+        if (Math.abs(diff) < 1) {
+          isAnimating = false;
           return targetRadius;
         }
         
-        animationRef.current = requestAnimationFrame(animateRadius);
+        if (isAnimating) {
+          animationRef.current = requestAnimationFrame(animateRadius);
+        }
         return current + step;
       });
     };
@@ -50,6 +70,7 @@ const Hero = () => {
     animationRef.current = requestAnimationFrame(animateRadius);
     
     return () => {
+      isAnimating = false;
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }

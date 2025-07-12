@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from "framer-motion";
 import { ProjectCard } from "./ProjectCard";
 import { Filter } from "lucide-react";
@@ -33,7 +33,7 @@ export const Projects: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
-  const projects = [
+  const projects = useMemo(() => [
     {
       title: "Crime Analysis and Predictions Platform",
       description: "A platform for analyzing and predicting crime trends in Islamabad.",
@@ -80,17 +80,17 @@ export const Projects: React.FC = () => {
       githubUrl: "https://github.com/abdullah-naeem-gh/Stronghold_Reckon",
       imageUrl: stronghold3,
     },
-  ];
+  ], []);
 
   // Collect unique categories
-  const allCategories = Array.from(
+  const allCategories = useMemo(() => Array.from(
     new Set(projects.flatMap((project) => project.categories))
-  ).sort();
+  ).sort(), [projects]);
 
   // Filter projects
-  const filteredProjects = selectedCategory
+  const filteredProjects = useMemo(() => selectedCategory
     ? projects.filter((project) => project.categories.includes(selectedCategory))
-    : projects;
+    : projects, [projects, selectedCategory]);
 
   const handleViewProject = (slideProject: ProjectSlideData) => {
     // Find the full project data from our projects array

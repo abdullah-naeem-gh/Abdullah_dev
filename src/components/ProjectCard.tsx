@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import { Github, ExternalLink, X, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -21,7 +21,7 @@ interface ProjectCardProps {
   onClose: () => void;
 }
 
-export const ProjectCard: React.FC<ProjectCardProps> = ({
+export const ProjectCard: React.FC<ProjectCardProps> = memo(({
   title,
   description,
   tech,
@@ -241,6 +241,6 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       )}
     </AnimatePresence>
   );
-};
+});
 
 export default ProjectCard;

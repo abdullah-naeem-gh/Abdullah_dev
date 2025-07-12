@@ -26,10 +26,26 @@ const Slide = ({ slide, index, current, handleSlideClick, onViewProject }: Slide
   const xRef = useRef(0);
   const yRef = useRef(0);
   const frameRef = useRef<number>();
+  const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
+    setIsActive(current === index);
+  }, [current, index]);
+
+  useEffect(() => {
+    if (!isActive) return;
+
+    let frameCount = 0;
     const animate = () => {
       if (!slideRef.current) return;
+      
+      // Skip frames for better performance
+      frameCount++;
+      if (frameCount % 2 === 0) {
+        frameRef.current = requestAnimationFrame(animate);
+        return;
+      }
+      
       const x = xRef.current;
       const y = yRef.current;
       slideRef.current.style.setProperty("--x", `${x}px`);
@@ -37,19 +53,22 @@ const Slide = ({ slide, index, current, handleSlideClick, onViewProject }: Slide
       frameRef.current = requestAnimationFrame(animate);
     };
     frameRef.current = requestAnimationFrame(animate);
+    
     return () => {
       if (frameRef.current) {
         cancelAnimationFrame(frameRef.current);
       }
     };
-  }, []);
+  }, [isActive]);
 
   const handleMouseMove = (event: React.MouseEvent) => {
+    if (!isActive) return;
+    
     const el = slideRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
-    xRef.current = event.clientX - (r.left + Math.floor(r.width / 2));
-    yRef.current = event.clientY - (r.top + Math.floor(r.height / 2));
+    xRef.current = (event.clientX - (r.left + Math.floor(r.width / 2))) * 0.3; // Further reduced intensity
+    yRef.current = (event.clientY - (r.top + Math.floor(r.height / 2))) * 0.3; // Further reduced intensity
   };
 
   const handleMouseLeave = () => {
@@ -63,50 +82,51 @@ const Slide = ({ slide, index, current, handleSlideClick, onViewProject }: Slide
     <div className="[perspective:1200px] [transform-style:preserve-3d]">
       <div
         ref={slideRef}
-        className="flex flex-1 flex-col items-center justify-center relative text-center text-white opacity-100 transition-all duration-300 ease-in-out w-[85vw] h-[60vh] sm:w-[70vw] sm:h-[55vh] md:w-[60vw] md:h-[50vh] lg:w-[50vmin] lg:h-[50vmin] cursor-pointer"
+        className="flex flex-1 flex-col items-center justify-center relative text-center text-white transition-all duration-300 ease-in-out w-[85vw] h-[60vh] sm:w-[70vw] sm:h-[55vh] md:w-[60vw] md:h-[50vh] lg:w-[50vmin] lg:h-[50vmin] cursor-pointer"
         onClick={() => handleSlideClick(index)}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         style={{
-          transform:
-            current !== index
-              ? "scale(0.85) rotateX(8deg)"
-              : "scale(1) rotateX(0deg)",
-          transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+          transform: !isActive
+            ? "scale(0.85) rotateX(8deg)"
+            : "scale(1) rotateX(0deg)",
+          transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)", // Smoother transition
           transformOrigin: "bottom",
+          willChange: isActive ? "transform" : "auto", // Optimize GPU usage
         }}
       >
         <div
           className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg overflow-hidden transition-all duration-150 ease-out"
           style={{
-            transform:
-              current === index
-                ? "translate3d(calc(var(--x) / 30), calc(var(--y) / 30), 0)"
-                : "none",
+            transform: isActive
+              ? "translate3d(calc(var(--x) / 30), calc(var(--y) / 30), 0)"
+              : "none",
+            backfaceVisibility: "hidden", // Improve performance
+            willChange: isActive ? "transform" : "auto",
           }}
         >
-          {imageUrl && (
-            <img
-              className="absolute inset-0 w-full h-full object-cover transition-opacity duration-600 ease-in-out"
-              style={{
-                opacity: current === index ? 0.8 : 0.3,
-              }}
-              alt={title}
-              src={imageUrl}
-              loading="eager"
-              decoding="sync"
-            />
-          )}
-          {current === index && (
-            <div className="absolute inset-0 bg-black/40 transition-all duration-1000" />
-          )}
-        </div>
+        {imageUrl && (
+          <img
+            className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-in-out"
+            style={{
+              opacity: isActive ? 0.8 : 0.3,
+            }}
+            alt={title}
+            src={imageUrl}
+            loading="lazy" // Always lazy load for better performance
+            decoding="async"
+          />
+        )}
+        {isActive && (
+          <div className="absolute inset-0 bg-black/40 transition-all duration-500" />
+        )}
+      </div>
 
-        <article
-          className={`relative p-3 sm:p-4 md:p-6 transition-opacity duration-1000 ease-in-out z-10 ${
-            current === index ? "opacity-100 visible" : "opacity-0 invisible"
-          }`}
-        >
+      <article
+        className={`relative p-3 sm:p-4 md:p-6 transition-opacity duration-500 ease-in-out z-10 ${
+          isActive ? "opacity-100 visible" : "opacity-0 invisible"
+        }`}
+      >
           <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold mb-2 sm:mb-3 text-white leading-tight">
             {title}
           </h2>

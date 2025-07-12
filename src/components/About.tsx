@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 const About = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -6,6 +6,16 @@ const About = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [animatedRadius, setAnimatedRadius] = useState(30);
   const animationRef = useRef<number>();
+  const lastUpdateTime = useRef(0);
+
+  // Throttled mouse move handler
+  const throttledMouseMove = useCallback((e: MouseEvent) => {
+    const now = Date.now();
+    if (now - lastUpdateTime.current > 32) { // 30fps
+      setMousePos({ x: e.clientX, y: e.clientY });
+      lastUpdateTime.current = now;
+    }
+  }, []);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -15,34 +25,37 @@ const About = () => {
     checkMobile();
     window.addEventListener('resize', checkMobile);
 
-    const onMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    };
-    
     if (!isMobile) {
-      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mousemove', throttledMouseMove, { passive: true });
     }
     
     return () => {
-      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mousemove', throttledMouseMove);
       window.removeEventListener('resize', checkMobile);
     };
-  }, [isMobile]);
+  }, [isMobile, throttledMouseMove]);
 
   // Smooth radius animation
   useEffect(() => {
     const targetRadius = isHoveringText ? (isMobile ? 100 : 150) : (isMobile ? 30 : 50);
+    let isAnimating = true;
     
     const animateRadius = () => {
+      if (!isAnimating) return;
+      
+      // Run animation every frame for smoother circle transitions
       setAnimatedRadius(current => {
         const diff = targetRadius - current;
-        const step = diff * 0.1; // Smooth animation speed
+        const step = diff * 0.04; // Slower animation speed (reduced from 0.1 to 0.04)
         
         if (Math.abs(diff) < 0.5) {
+          isAnimating = false;
           return targetRadius;
         }
         
-        animationRef.current = requestAnimationFrame(animateRadius);
+        if (isAnimating) {
+          animationRef.current = requestAnimationFrame(animateRadius);
+        }
         return current + step;
       });
     };
@@ -50,6 +63,7 @@ const About = () => {
     animationRef.current = requestAnimationFrame(animateRadius);
     
     return () => {
+      isAnimating = false;
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }

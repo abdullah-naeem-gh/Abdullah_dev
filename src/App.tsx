@@ -1,5 +1,5 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { GithubIcon, Mail, Menu, X } from 'lucide-react';
 import Hero from './components/Hero';
 import { Experience } from './components/Experience';
@@ -7,11 +7,18 @@ import { Projects } from './components/Projects';
 // import { Skills } from './components/Skills';
 import About from './components/About';
 import Threads from './components/Threads';
+import PerformanceMonitor from './components/PerformanceMonitor';
 
 const App: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentSection, setCurrentSection] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout>();
+  const lastScrollTime = useRef(0);
+  const lastWheelTime = useRef(0);
+  const lastKeyboardTime = useRef(0);
+  
   const { scrollXProgress } = useScroll({
     container: containerRef,
   });
@@ -34,76 +41,116 @@ const App: React.FC = () => {
     { title: 'Projects', section: 3 },
   ];
   
+  // Optimized scroll handling with throttling
+  const handleScroll = useCallback(() => {
+    if (!containerRef.current) return;
+    
+    const now = Date.now();
+    if (now - lastScrollTime.current < 32) return; // Throttle to ~30fps
+    
+    lastScrollTime.current = now;
+    
+    const container = containerRef.current;
+    const scrollLeft = container.scrollLeft;
+    const sectionWidth = window.innerWidth;
+    const newSection = Math.round(scrollLeft / sectionWidth);
+    
+    if (newSection !== currentSection && newSection >= 0 && newSection < sections.length) {
+      setCurrentSection(newSection);
+    }
+  }, [currentSection, sections.length]);
+
+  // Separate keyboard handler with less restrictions
+  const handleKeyboardNavigation = useCallback((direction: number) => {
+    if (!containerRef.current) return false;
+    
+    let nextSection = currentSection;
+    if (direction > 0 && currentSection < sections.length - 1) {
+      nextSection = currentSection + 1;
+    } else if (direction < 0 && currentSection > 0) {
+      nextSection = currentSection - 1;
+    } else {
+      return false;
+    }
+    
+    setCurrentSection(nextSection);
+    
+    const targetScroll = window.innerWidth * nextSection;
+    containerRef.current.scrollTo({
+      left: targetScroll,
+      behavior: 'smooth',
+    });
+    
+    return true;
+  }, [currentSection, sections.length]);
+
+  // Optimized section change with debouncing
+  const handleSectionChange = useCallback((direction: number, inputType: 'keyboard' | 'wheel' | 'touch' = 'wheel') => {
+    if (!containerRef.current) return false;
+    
+    const now = Date.now();
+    // Different debouncing for different input types
+    const debounceTime = inputType === 'keyboard' ? 100 : inputType === 'touch' ? 200 : 0; // No debounce for wheel
+    
+    // Only check isScrolling for touch events
+    if (inputType === 'touch' && isScrolling) return false;
+    
+    if (debounceTime > 0 && now - lastScrollTime.current < debounceTime) return false;
+    
+    lastScrollTime.current = now;
+    
+    let nextSection = currentSection;
+    if (direction > 0 && currentSection < sections.length - 1) {
+      nextSection = currentSection + 1;
+    } else if (direction < 0 && currentSection > 0) {
+      nextSection = currentSection - 1;
+    } else {
+      return false;
+    }
+    
+    if (inputType === 'touch') {
+      setIsScrolling(true);
+    }
+    setCurrentSection(nextSection);
+    
+    const targetScroll = window.innerWidth * nextSection;
+    containerRef.current.scrollTo({
+      left: targetScroll,
+      behavior: 'smooth',
+    });
+    
+    // Only set timeout for touch events
+    if (inputType === 'touch') {
+      // Clear any existing timeout
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      
+      // Reset scrolling flag
+      scrollTimeoutRef.current = setTimeout(() => {
+        setIsScrolling(false);
+      }, 600);
+    }
+    
+    return true;
+  }, [currentSection, sections.length, isScrolling]);
+
   useEffect(() => {
     const element = document.documentElement;
     const container = containerRef.current;
     if (!container) return;
 
-    let isScrolling = false;
-    let lastScrollTime = Date.now();
     let touchStartX = 0;
     let touchStartY = 0;
 
-    const handleScroll = () => {
-      // Track scroll position for threads interaction and update current section
-      if (!isScrolling && container) {
-        const scrollLeft = container.scrollLeft;
-        const sectionWidth = window.innerWidth;
-        const newSection = Math.round(scrollLeft / sectionWidth);
-        
-        // Only update if the section actually changed
-        if (newSection !== currentSection && newSection >= 0 && newSection < sections.length) {
-          setCurrentSection(newSection);
-        }
+    // Add scroll listener with throttling
+    const throttledScrollHandler = () => {
+      if (!isScrolling) {
+        handleScroll();
       }
     };
     
-    container.addEventListener('scroll', handleScroll);
-
-    const handleSectionChange = (direction: number) => {
-      if (isScrolling) return false;
-      
-      const now = Date.now();
-      if (now - lastScrollTime < 500) return false;
-      
-      lastScrollTime = now;
-      
-      // Calculate next section
-      let nextSection = currentSection;
-      if (direction > 0 && currentSection < sections.length - 1) {
-        nextSection = currentSection + 1;
-      } else if (direction < 0 && currentSection > 0) {
-        nextSection = currentSection - 1;
-      } else {
-        // Already at the boundary, don't do anything
-        return false;
-      }
-      
-      isScrolling = true;
-      
-      // Update the section state immediately for visual feedback
-      setCurrentSection(nextSection);
-      
-      // Calculate the exact scroll position for the target section
-      const targetScroll = window.innerWidth * nextSection;
-      
-      // Perform the scroll
-      container.scrollTo({
-        left: targetScroll,
-        behavior: 'smooth',
-      });
-      
-      // Reset scrolling flag after animation completes
-      setTimeout(() => {
-        isScrolling = false;
-        // Ensure we're exactly at the right position after smooth scroll
-        if (container.scrollLeft !== targetScroll) {
-          container.scrollLeft = targetScroll;
-        }
-      }, 1200);
-      
-      return true;
-    };
+    container.addEventListener('scroll', throttledScrollHandler, { passive: true });
 
     // Handle touch events for mobile
     const onTouchStart = (e: TouchEvent) => {
@@ -118,62 +165,93 @@ const App: React.FC = () => {
       const deltaX = touchStartX - touchEndX;
       const deltaY = touchStartY - touchEndY;
       
-      // Only handle horizontal swipes (ignore vertical scrolling)
       if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
         const direction = deltaX > 0 ? 1 : -1;
-        handleSectionChange(direction);
+        handleSectionChange(direction, 'touch');
       }
     };
 
+    // Optimized wheel handler with better performance and controlled scrolling
     const onWheel = (e: WheelEvent) => {
-      // Determine if this is primarily a horizontal or vertical scroll
+      const now = Date.now();
+      if (now - lastWheelTime.current < 800) return; // Longer debounce to prevent multiple rapid scrolls
+      
       const isHorizontalScroll = Math.abs(e.deltaX) > Math.abs(e.deltaY);
       const isVerticalScroll = Math.abs(e.deltaY) > Math.abs(e.deltaX);
       
       let direction = 0;
       
+      // Increase sensitivity threshold to prevent accidental scrolls
       if (isHorizontalScroll) {
-        // Handle horizontal wheel/trackpad scroll
-        direction = e.deltaX > 10 ? 1 : e.deltaX < -10 ? -1 : 0;
+        direction = e.deltaX > 30 ? 1 : e.deltaX < -30 ? -1 : 0;
       } else if (isVerticalScroll) {
-        // Handle vertical wheel scroll (convert to horizontal navigation)
-        direction = e.deltaY > 10 ? 1 : e.deltaY < -10 ? -1 : 0;
+        direction = e.deltaY > 30 ? 1 : e.deltaY < -30 ? -1 : 0;
       }
       
       if (direction !== 0) {
         e.preventDefault();
-        handleSectionChange(direction);
+        lastWheelTime.current = now;
+        
+        // Direct navigation with single section movement
+        if (containerRef.current) {
+          let nextSection = currentSection;
+          if (direction > 0 && currentSection < sections.length - 1) {
+            nextSection = currentSection + 1;
+          } else if (direction < 0 && currentSection > 0) {
+            nextSection = currentSection - 1;
+          }
+          
+          if (nextSection !== currentSection) {
+            setCurrentSection(nextSection);
+            
+            const targetScroll = window.innerWidth * nextSection;
+            containerRef.current.scrollTo({
+              left: targetScroll,
+              behavior: 'smooth',
+            });
+          }
+        }
       }
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
-      // Only handle arrow keys if no input elements are focused
       if (document.activeElement?.tagName === 'INPUT' || 
           document.activeElement?.tagName === 'TEXTAREA') {
         return;
       }
       
-      e.preventDefault();
-      
+      let direction = 0;
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-        handleSectionChange(1);
+        direction = 1;
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-        handleSectionChange(-1);
+        direction = -1;
+      }
+      
+      if (direction !== 0) {
+        e.preventDefault();
+        
+        // Use dedicated keyboard navigation for better responsiveness
+        const now = Date.now();
+        if (now - lastKeyboardTime.current >= 150) { // Minimal debounce for keyboard
+          lastKeyboardTime.current = now;
+          handleKeyboardNavigation(direction);
+        }
       }
     };
 
+    // Prevent default scroll behavior for better control
     const preventDefaultScroll = (e: WheelEvent) => {
-      // Only prevent scroll if it's likely to trigger our section navigation
       const isHorizontalScroll = Math.abs(e.deltaX) > Math.abs(e.deltaY);
       const isVerticalScroll = Math.abs(e.deltaY) > Math.abs(e.deltaX);
       
-      if ((isHorizontalScroll && Math.abs(e.deltaX) > 10) || 
-          (isVerticalScroll && Math.abs(e.deltaY) > 10)) {
+      // Only prevent default for significant scroll movements
+      if ((isHorizontalScroll && Math.abs(e.deltaX) > 30) || 
+          (isVerticalScroll && Math.abs(e.deltaY) > 30)) {
         e.preventDefault();
       }
     };
 
-    // Handle window resize to adjust scroll position
+    // Handle window resize
     const handleResize = () => {
       if (container && !isScrolling) {
         const targetScroll = window.innerWidth * currentSection;
@@ -181,11 +259,11 @@ const App: React.FC = () => {
       }
     };
 
-    // Add event listeners
-    window.addEventListener('resize', handleResize);
+    // Add event listeners with optimized options
+    window.addEventListener('resize', handleResize, { passive: true });
     element.addEventListener('wheel', preventDefaultScroll, { passive: false });
     element.addEventListener('wheel', onWheel, { passive: false });
-    element.addEventListener('keydown', onKeyDown);
+    element.addEventListener('keydown', onKeyDown, { passive: false });
     element.addEventListener('touchstart', onTouchStart, { passive: true });
     element.addEventListener('touchend', onTouchEnd, { passive: true });
 
@@ -196,9 +274,14 @@ const App: React.FC = () => {
       element.removeEventListener('keydown', onKeyDown);
       element.removeEventListener('touchstart', onTouchStart);
       element.removeEventListener('touchend', onTouchEnd);
-      container.removeEventListener('scroll', handleScroll);
+      container.removeEventListener('scroll', throttledScrollHandler);
+      
+      // Clear any pending timeouts
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
     };
-  }, [currentSection, sections.length]);
+  }, [currentSection, sections.length, handleScroll, handleSectionChange, handleKeyboardNavigation, isScrolling]);
 
   const scrollToSection = (section: number) => {
     if (containerRef.current && section >= 0 && section < sections.length) {
@@ -214,16 +297,30 @@ const App: React.FC = () => {
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-background">
-      {/* Global Threads background */}
+      {/* Global Threads background - Only render when needed */}
       <div className="fixed inset-0 z-5 pointer-events-none">
-        {(currentSection === 0 || currentSection === 1) && (
-          <Threads 
-            color={[0.9, 0.2, 0.2]} 
-            amplitude={window.innerWidth < 768 ? 0.5 : 0.8} 
-            distance={window.innerWidth < 768 ? 0.1 : 0.2} 
-            enableMouseInteraction={window.innerWidth >= 768}
-          />
-        )}
+        <AnimatePresence mode="wait">
+          {currentSection === 0 && (
+            <motion.div
+              key="threads-background"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ 
+                duration: 0.8, 
+                ease: [0.4, 0, 0.2, 1] // Custom easing for smoother transition
+              }}
+              className="absolute inset-0"
+            >
+              <Threads 
+                color={[0.9, 0.2, 0.2]} 
+                amplitude={window.innerWidth < 768 ? 0.4 : 0.7} // Increased amplitude for more visual impact
+                distance={window.innerWidth < 768 ? 0.05 : 0.1} // Slightly increased distance
+                enableMouseInteraction={window.innerWidth >= 768} // Disable on mobile
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Header */}
@@ -411,6 +508,9 @@ const App: React.FC = () => {
           />
         ))}
       </div>
+
+      {/* Performance Monitor (Development Only) */}
+      {process.env.NODE_ENV === 'development' && <PerformanceMonitor />}
     </div>
   );
 };

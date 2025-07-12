@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { motion } from "framer-motion";
 import { Code2, Server, Brain, PenTool as Tool } from "lucide-react";
 
@@ -31,7 +31,7 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-export const Skills: React.FC = () => {
+export const Skills: React.FC = memo(() => {
   return (
     <div className="relative text-white py-8 px-4 lg:px-8">
       {/* Background Pattern */}
@@ -95,4 +95,4 @@ export const Skills: React.FC = () => {
       </motion.div>
     </div>
   );
-};
+});

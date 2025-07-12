@@ -40,9 +40,9 @@ uniform vec2 uMouse;
 
 #define PI 3.1415926538
 
-const int u_line_count = 40;
-const float u_line_width = 7.0;
-const float u_line_blur = 10.0;
+const int u_line_count = 35; // Reduced from 40 for better performance with higher amplitude
+const float u_line_width = 6.0; // Slightly reduced for smoother rendering
+const float u_line_blur = 8.0; // Reduced blur for better performance
 
 // Helper function for simplified noise - defined BEFORE first usage
 vec2 hash2(vec2 p) {
@@ -153,6 +153,10 @@ const Threads: React.FC<ThreadsProps> = ({
   const [contextLost, setContextLost] = useState(false);
   const contextRestoreAttempts = useRef(0);
   const maxRestoreAttempts = 3;
+  const isVisibleRef = useRef(true);
+  const performanceMode = useRef(window.innerWidth < 768 || navigator.hardwareConcurrency < 4);
+  const frameSkipCounter = useRef(0);
+  const adaptiveFrameSkip = useRef(performanceMode.current ? 3 : 1); // Skip more frames on low-end devices
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -162,6 +166,16 @@ const Threads: React.FC<ThreadsProps> = ({
     let gl: OGLRenderingContext | null = null;
     let mesh: Mesh | null = null;
     let program: Program | null = null;
+    
+    // Visibility detection for performance
+    const intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        isVisibleRef.current = entries[0].isIntersecting;
+      },
+      { threshold: 0.1 }
+    );
+    
+    intersectionObserver.observe(container);
     
     // Handle context loss
     const handleContextLost = (e: Event) => {
@@ -190,27 +204,46 @@ const Threads: React.FC<ThreadsProps> = ({
       }
     };
 
-    // Mouse position tracking - simplified for direct response
+    // Mouse position tracking - throttled for performance
     const mousePosition = {
-      target: [0.5, 0.5]
+      target: [0.5, 0.5],
+      current: [0.5, 0.5]
     };
     
+    let mouseThrottleId: number | null = null;
+    let lastMouseUpdate = 0;
+    
     function handleMouseMove(e: MouseEvent) {
-      if (!container) return;
-      const rect = container.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width;
-      const y = 1.0 - (e.clientY - rect.top) / rect.height;
-      mousePosition.target = [x, y];
+      if (!container || !enableMouseInteraction) return;
+      
+      const now = Date.now();
+      if (now - lastMouseUpdate < 32) return; // Throttle to 30fps for mouse
+      lastMouseUpdate = now;
+      
+      // Throttle mouse events using requestAnimationFrame
+      if (mouseThrottleId) return;
+      
+      mouseThrottleId = requestAnimationFrame(() => {
+        const rect = container.getBoundingClientRect();
+        const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        const y = Math.max(0, Math.min(1, 1.0 - (e.clientY - rect.top) / rect.height));
+        mousePosition.target = [x, y];
+        mouseThrottleId = null;
+      });
     }
     
     function handleMouseLeave() {
       mousePosition.target = [0.5, 0.5];
+      if (mouseThrottleId) {
+        cancelAnimationFrame(mouseThrottleId);
+        mouseThrottleId = null;
+      }
     }
     
-    // Add mouse event listeners
+    // Add mouse event listeners with passive flag for better performance
     if (enableMouseInteraction) {
-      container.addEventListener("mousemove", handleMouseMove);
-      container.addEventListener("mouseleave", handleMouseLeave);
+      container.addEventListener("mousemove", handleMouseMove, { passive: true });
+      container.addEventListener("mouseleave", handleMouseLeave, { passive: true });
     }
 
     // Initialize WebGL setup
@@ -299,15 +332,35 @@ const Threads: React.FC<ThreadsProps> = ({
         return;
       }
 
+      // Skip rendering when not visible
+      if (!isVisibleRef.current) {
+        animationFrameId.current = requestAnimationFrame(update);
+        return;
+      }
+
+      // Adaptive frame skipping for better performance with higher amplitude
+      frameSkipCounter.current++;
+      if (frameSkipCounter.current % adaptiveFrameSkip.current !== 0) {
+        animationFrameId.current = requestAnimationFrame(update);
+        return;
+      }
+
+      // Smooth mouse interpolation for better performance
       if (enableMouseInteraction) {
-        // Direct mouse tracking without smoothing for instant response
-        program.uniforms.uMouse.value[0] = mousePosition.target[0];
-        program.uniforms.uMouse.value[1] = mousePosition.target[1];
+        const lerpFactor = performanceMode.current ? 0.03 : 0.08; // Slightly reduced for smoother animation
+        mousePosition.current[0] += (mousePosition.target[0] - mousePosition.current[0]) * lerpFactor;
+        mousePosition.current[1] += (mousePosition.target[1] - mousePosition.current[1]) * lerpFactor;
+        
+        program.uniforms.uMouse.value[0] = mousePosition.current[0];
+        program.uniforms.uMouse.value[1] = mousePosition.current[1];
       } else {
         program.uniforms.uMouse.value[0] = 0.5;
         program.uniforms.uMouse.value[1] = 0.5;
       }
-      program.uniforms.iTime.value = t * 0.0003; // Reduced from 0.001 to 0.0005 for slower animation
+      
+      // Optimized time progression for higher amplitude
+      const timeScale = performanceMode.current ? 0.00008 : 0.00015; // Slightly slower for smoother high-amplitude animation
+      program.uniforms.iTime.value = t * timeScale;
 
       try {
         renderer.render({ scene: mesh });
@@ -326,11 +379,15 @@ const Threads: React.FC<ThreadsProps> = ({
         cancelAnimationFrame(animationFrameId.current);
       }
       
+      if (mouseThrottleId) {
+        cancelAnimationFrame(mouseThrottleId);
+      }
+      
       window.removeEventListener("resize", resize);
       
-      if (enableMouseInteraction && containerRef.current) {
-        containerRef.current.removeEventListener("mousemove", handleMouseMove);
-        containerRef.current.removeEventListener("mouseleave", handleMouseLeave);
+      if (enableMouseInteraction && container) {
+        container.removeEventListener("mousemove", handleMouseMove);
+        container.removeEventListener("mouseleave", handleMouseLeave);
       }
       
       // Clean up WebGL context
@@ -339,12 +396,17 @@ const Threads: React.FC<ThreadsProps> = ({
           gl.canvas.removeEventListener('webglcontextlost', handleContextLost);
           gl.canvas.removeEventListener('webglcontextrestored', handleContextRestored);
           
-          if (container.contains(gl.canvas as Node)) {
+          if (container && container.contains(gl.canvas as Node)) {
             container.removeChild(gl.canvas as Node);
           }
         }
         
         gl.getExtension("WEBGL_lose_context")?.loseContext();
+      }
+      
+      // Clean up intersection observer
+      if (intersectionObserver) {
+        intersectionObserver.disconnect();
       }
     };
   }, [color, amplitude, distance, enableMouseInteraction]);

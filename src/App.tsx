@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { GithubIcon, Mail, Menu, X } from 'lucide-react';
+import { GithubIcon, Mail, Menu, X, Moon, Sun } from 'lucide-react';
 import Hero from './components/Hero';
 import { Experience } from './components/Experience';
 import { Projects } from './components/Projects';
@@ -23,6 +23,27 @@ const App: React.FC = () => {
   });
 
   const headerOpacity = useTransform(scrollXProgress, [0, 0.1], [1, 0.6]);
+
+  // Theme handling
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const stored = localStorage.getItem('theme');
+    if (stored === 'light' || stored === 'dark') return stored;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
 
   // Define sections
   const sections = [
@@ -329,6 +350,14 @@ const App: React.FC = () => {
             >
               <GithubIcon size={18} />
             </motion.a>
+            <motion.button
+              onClick={toggleTheme}
+              className="text-gray-700 hover:text-black transition-colors p-1.5 rounded-md hover:bg-gray-100"
+              whileTap={{ scale: 0.95 }}
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </motion.button>
           </div>
         </div>
 

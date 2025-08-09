@@ -4,16 +4,29 @@ import { Briefcase, Calendar } from "lucide-react";
 export const Experience: React.FC = () => {
   const experiences = [
     {
+      title: "Full‑stack Developer",
+      company: "Salik Labs · Internship | Islamabad | On-site",
+      period: "Jul 2025 - Present • 2 months",
+      description:
+        "Integrating AI chat with file uploads and building a scalable full‑stack platform.",
+      achievements: [
+        "Integrated AI chat with file uploads, markdown, and persistent context.",
+        "Engineered app with React (TypeScript), Express, and Supabase using clean architecture.",
+        "Dockerized front/back; deployed on AWS EC2 with Nginx reverse proxy and Let's Encrypt SSL.",
+        "Implemented secure auth, RBAC, and multi‑tenant orgs with email verification.",
+      ],
+    },
+    {
       title: "Software Intern",
       company: "Mezino Technologies | Lahore | Onsite",
       period: "Jun 2024 - Sep 2024 • 4 months",
       description:
-        "Developed and deployed full-stack websites with cloud-based microservices, implemented DevOps practices, and enabled scalable deployment of AI models using modern tools and cloud platforms.",
+        "Built full‑stack web apps and cloud microservices with DevOps and scalable AI deployments.",
       achievements: [
-        "Developed REST APIs with Node.js and Express, using TypeScript and documented with OpenAPI standards.",
-        "Containerized applications using Docker and built CI/CD pipelines with GitHub Actions for seamless deployment.",
-        "Leveraged vector embeddings and deployed large AI models on GCPs Vertex AI Workbench and Runpod for various ML workflows.",
-        "Deployed applications on Google Cloud Run, integrating them with Cloud SQL and Cloud Storage to manage infrastructure effectively with Pulumi.",
+        "Built typed REST APIs (Node.js, Express, OpenAPI).",
+        "Dockerized services and set up CI/CD with GitHub Actions.",
+        "Used vector embeddings; deployed LLMs on Vertex AI and Runpod.",
+        "Deployed to Cloud Run; integrated Cloud SQL/Storage with Pulumi.",
       ],
     },
   ];
@@ -35,68 +48,56 @@ export const Experience: React.FC = () => {
 
   return (
     <motion.div
-      className="max-w-4xl mx-auto p-3 sm:p-4 md:p-8"
+      className="h-full w-full flex items-center justify-center"
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
     >
-      <motion.h2
-        className="text-2xl sm:text-3xl md:text-4xl font-bold text-black mb-6 sm:mb-8 md:mb-12 text-center px-2"
-        variants={itemVariants}
-      >
-        Professional Experience
-      </motion.h2>
+      <div className="w-full max-w-5xl px-3 sm:px-6 md:px-8 pt-12 md:pt-16 pb-4">
+        <motion.h2
+          className="text-2xl sm:text-3xl md:text-4xl font-bold text-black text-center mb-4 sm:mb-6"
+          variants={itemVariants}
+        >
+          Professional Experience
+        </motion.h2>
 
-      <div className="relative">
-        {/* Vertical timeline line - hidden on mobile */}
-        <div className="hidden md:block absolute left-6 lg:left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-red-500 to-red-600"></div>
-
-        {experiences.map((exp, index) => (
-          <motion.div key={index} className="mb-6 sm:mb-8 md:mb-12 relative" variants={itemVariants}>
-            {/* Circular icon container - responsive sizing */}
-            <div className="absolute left-0 w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-white border-2 sm:border-3 md:border-4 border-red-500 flex items-center justify-center">
-              <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-red-500" />
-            </div>
-
-            {/* Content box - responsive margins and padding */}
-            <div className="ml-14 sm:ml-16 md:ml-24 bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-5 md:p-6">
-              {/* Title & company - responsive layout */}
-              <div className="flex flex-col gap-1 sm:gap-2 md:flex-row md:items-center md:gap-4 mb-3 sm:mb-4">
-                <h3 className="text-lg sm:text-xl md:text-xl font-bold text-black">
-                  {exp.title}
-                </h3>
-                <span className="hidden md:inline text-red-500">•</span>
-                <span className="text-sm sm:text-base text-gray-600">{exp.company}</span>
+        <div className="grid grid-cols-1 gap-4 md:gap-5">
+          {experiences.map((exp, index) => (
+            <motion.div
+              key={index}
+              className="rounded-xl bg-white text-black shadow-xl p-4 sm:p-5 md:p-6"
+              variants={itemVariants}
+            >
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4 mb-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-red-500 flex items-center justify-center bg-gray-100">
+                    <Briefcase className="w-4 h-4 text-red-500" />
+                  </div>
+                  <div className="flex flex-col">
+                    <h3 className="text-lg sm:text-xl font-bold leading-tight">{exp.title}</h3>
+                    <span className="text-xs sm:text-sm text-gray-600">{exp.company}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span className="text-xs sm:text-sm text-gray-700">{exp.period}</span>
+                </div>
               </div>
 
-              {/* Period */}
-              <div className="flex items-center gap-2 text-gray-600 mb-3 sm:mb-4">
-                <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="text-sm sm:text-base">{exp.period}</span>
-              </div>
+              <p className="text-sm text-gray-700 mb-3">{exp.description}</p>
 
-              {/* Description */}
-              <p className="text-sm sm:text-base text-gray-700 mb-3 sm:mb-4 leading-relaxed">{exp.description}</p>
-
-              {/* Achievements */}
-              <ul className="space-y-1.5 sm:space-y-2">
-                {exp.achievements.map((achievement, i) => (
-                  <motion.li
-                    key={i}
-                    className="flex items-start gap-2 text-sm sm:text-base text-gray-700 leading-relaxed"
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                  >
-                    <span className="text-red-500 mt-1 text-xs sm:text-sm flex-shrink-0">•</span>
-                    <span>{achievement}</span>
-                  </motion.li>
+              <ul className="space-y-1.5">
+                {exp.achievements.slice(0, 3).map((achievement, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                    <span className="text-red-500 mt-1 text-xs flex-shrink-0">•</span>
+                    <span className="leading-relaxed">{achievement}</span>
+                  </li>
                 ))}
               </ul>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          ))}
+        </div>
       </div>
     </motion.div>
   );

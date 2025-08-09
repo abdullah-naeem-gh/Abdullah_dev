@@ -130,6 +130,15 @@ html.dark {
   color-scheme: dark;
 }
 
+/* Cancel inversion for media and targeted elements inside dark mode */
+html.dark img,
+html.dark picture,
+html.dark video,
+html.dark canvas,
+html.dark .no-invert {
+  filter: invert(1) hue-rotate(180deg) !important;
+}
+
 /* Animation Classes */
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;

@@ -107,7 +107,7 @@ const Slide = ({ slide, index, current, handleSlideClick, onViewProject }: Slide
         >
         {imageUrl && (
           <img
-            className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-in-out"
+            className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ease-in-out no-invert"
             style={{
               opacity: isActive ? 0.8 : 0.3,
             }}
@@ -118,12 +118,12 @@ const Slide = ({ slide, index, current, handleSlideClick, onViewProject }: Slide
           />
         )}
         {isActive && (
-          <div className="absolute inset-0 bg-black/40 transition-all duration-500" />
+          <div className="absolute inset-0 bg-black/40 transition-all duration-500 no-invert" />
         )}
       </div>
 
       <article
-        className={`relative p-3 sm:p-4 md:p-6 transition-opacity duration-500 ease-in-out z-10 ${
+        className={`relative p-3 sm:p-4 md:p-6 transition-opacity duration-500 ease-in-out z-10 no-invert ${
           isActive ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
       >

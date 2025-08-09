@@ -1,13 +1,12 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { GithubIcon, Mail, Menu, X } from 'lucide-react';
 import Hero from './components/Hero';
 import { Experience } from './components/Experience';
 import { Projects } from './components/Projects';
 // import { Skills } from './components/Skills';
 import About from './components/About';
-import Threads from './components/Threads';
-import PerformanceMonitor from './components/PerformanceMonitor';
+ 
 
 const App: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -297,31 +296,7 @@ const App: React.FC = () => {
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-background">
-      {/* Global Threads background - Only render when needed */}
-      <div className="fixed inset-0 z-5 pointer-events-none">
-        <AnimatePresence mode="wait">
-          {currentSection === 0 && (
-            <motion.div
-              key="threads-background"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ 
-                duration: 0.8, 
-                ease: [0.4, 0, 0.2, 1] // Custom easing for smoother transition
-              }}
-              className="absolute inset-0"
-            >
-              <Threads 
-                color={[0.9, 0.2, 0.2]} 
-                amplitude={window.innerWidth < 768 ? 0.4 : 0.7} // Increased amplitude for more visual impact
-                distance={window.innerWidth < 768 ? 0.05 : 0.1} // Slightly increased distance
-                enableMouseInteraction={window.innerWidth >= 768} // Disable on mobile
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      
 
       {/* Header */}
       <motion.header
@@ -509,8 +484,7 @@ const App: React.FC = () => {
         ))}
       </div>
 
-      {/* Performance Monitor (Development Only) */}
-      {process.env.NODE_ENV === 'development' && <PerformanceMonitor />}
+      
     </div>
   );
 };
